@@ -14,21 +14,21 @@ liteBatch是一个轻量级，高性能，高通用的批插工具
 
 ```java
     RowBatchListener<Person> rowBatchListener = new RowBatchListener<>(jdbcTemplate, 5000, Person.class);//申明一个监听器
-    	try{
-			Random random = new Random();
-			Person person = null;
-			for(int i=0;i<500500;i++){
-				person = new Person();
-				person.setAge(random.nextInt(100));
-				person.setAddress("XX马路1号");
-				person.setCompany("XX科技有限公司");
-				person.setName("张三");
-				person.setCreateTime(new Date());
-				rowBatchListener.insertWithBatch(person);//可以在循环中进行插入
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}finally{
-			rowBatchListener.closeListener();//一定要关闭监听，建议在finally里关闭
+	try{
+		Random random = new Random();
+		Person person = null;
+		for(int i=0;i<500500;i++){
+			person = new Person();
+			person.setAge(random.nextInt(100));
+			person.setAddress("XX马路1号");
+			person.setCompany("XX科技有限公司");
+			person.setName("张三");
+			person.setCreateTime(new Date());
+			rowBatchListener.insertWithBatch(person);//可以在循环中进行插入
 		}
+	}catch(Exception e){
+		e.printStackTrace();
+	}finally{
+		rowBatchListener.closeListener();//一定要关闭监听，建议在finally里关闭
+	}
 ```
