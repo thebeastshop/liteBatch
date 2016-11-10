@@ -32,3 +32,9 @@ liteBatch是一个轻量级，高性能，高通用的批插工具
 		rowBatchListener.closeListener();//一定要关闭监听，建议在finally里关闭
 	}
 ```
+
+##注意
+在mysql数据库下，需要注意以下几点
+
+* 驱动包一定得5.1.13版本以上（含）
+* 在jdbc连接url里得加上rewriteBatchedStatements=true参数
