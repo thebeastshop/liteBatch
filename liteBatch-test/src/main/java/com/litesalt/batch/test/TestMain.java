@@ -17,7 +17,7 @@ public class TestMain {
 	private JdbcTemplate jdbcTemplate;
 	
 	@Test
-	public void testBatch() throws Exception{
+	public void testBatch1() throws Exception{
 		RowBatchListener<Person> rowBatchListener = new RowBatchListener<>(jdbcTemplate, 5000, Person.class);
 		try{
 			Random random = new Random();
@@ -29,7 +29,36 @@ public class TestMain {
 				person.setCompany("天天 向上科技有限公司");
 				person.setName("张三");
 				person.setCreateTime(new Date());
-				rowBatchListener.insertWithBatch(person);
+				rowBatchListener.insertOneWithBatch(person);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			rowBatchListener.closeListener();
+		}
+		
+		System.in.read();
+	}
+	
+	@Test
+	public void testBatch2() throws Exception{
+		RowBatchListener<PersonVo> rowBatchListener = new RowBatchListener<>(jdbcTemplate, 5000, PersonVo.class);
+		try{
+			rowBatchListener.aliasTable("person");
+			rowBatchListener.aliasField("personName", "name");
+			rowBatchListener.aliasField("personAge","age");
+			rowBatchListener.aliasField("insertDate", "create_time");
+			
+			rowBatchListener.addExcludeField("coName");
+			
+			Random random = new Random();
+			PersonVo personVo = null;
+			for(int i=0;i<286000;i++){
+				personVo = new PersonVo();
+				personVo.setPersonName("李四");
+				personVo.setPersonAge(random.nextInt(100));
+				personVo.setCoName("XX公司");
+				rowBatchListener.insertOneWithBatch(personVo);
 			}
 		}catch(Exception e){
 			e.printStackTrace();

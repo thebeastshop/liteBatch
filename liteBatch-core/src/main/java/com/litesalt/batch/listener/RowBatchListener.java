@@ -9,6 +9,10 @@
  */
 package com.litesalt.batch.listener;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -24,20 +28,39 @@ public class RowBatchListener<T> {
 	
 	private RowBatchHandler<T> rowBatchHandler;
 	
+	
 	public RowBatchListener(JdbcTemplate jdbcTemplate,int submitCapacity,Class<T> clazz){
-		rowBatchHandler = new RowBatchHandler<T>(jdbcTemplate,submitCapacity, clazz);
+		this.rowBatchHandler = new RowBatchHandler<T>(jdbcTemplate,submitCapacity, clazz);
 		log.info("开始监听"+clazz.getSimpleName()+"的批次插入");
 	}
 	
-	public void insertWithBatch(T t){
+	public void insertOneWithBatch(T t){
 		if(t == null){
 			log.warn("po must not be null!");
 			return;
 		}
-		rowBatchHandler.insertWithBatch(new WrapItem<T>(t));
+		this.rowBatchHandler.insertWithBatch(new WrapItem<T>(t));
+	}
+	
+	public void insertBatch(Collection<T> coll){
+		for(T t : coll){
+			this.rowBatchHandler.insertWithBatch(new WrapItem<T>(t));
+		}
 	}
 	
 	public void closeListener(){
-		rowBatchHandler.shutDownHandler();
+		this.rowBatchHandler.shutDownHandler();
+	}
+	
+	public void aliasTable(String tableName){
+		this.rowBatchHandler.aliasTable(tableName);
+	}
+	
+	public void aliasField(String fieldName,String columnName){
+		this.rowBatchHandler.aliasField(fieldName, columnName);
+	}
+	
+	public void addExcludeField(String fieldName){
+		this.rowBatchHandler.addExcludeField(fieldName);
 	}
 }

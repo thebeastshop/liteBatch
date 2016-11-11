@@ -7,7 +7,7 @@ liteBatch是一个轻量级，高性能，高通用的批插工具
 * 适应所有的PO，无需任何配置
 * 性能高效，测试机上测试大概4w+/秒
 * 自动处理NULL值
-* 支持自定义的映射
+* 支持自定义的映射和过滤
 
 ##如何使用
 也可以参考test工程的testUnit
@@ -24,7 +24,7 @@ liteBatch是一个轻量级，高性能，高通用的批插工具
 			person.setCompany("XX科技有限公司");
 			person.setName("张三");
 			person.setCreateTime(new Date());
-			rowBatchListener.insertWithBatch(person);//可以在循环中进行插入
+			rowBatchListener.insertOneWithBatch(person);//可以在循环中进行插入
 		}
 	}catch(Exception e){
 		e.printStackTrace();
