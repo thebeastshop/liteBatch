@@ -22,7 +22,7 @@ public class TestMain {
 		try{
 			Random random = new Random();
 			Person person = null;
-			for(int i=0;i<286000;i++){
+			for(int i=0;i<66000;i++){
 				person = new Person();
 				person.setAge(random.nextInt(100));
 				person.setAddress("XX马路1号");

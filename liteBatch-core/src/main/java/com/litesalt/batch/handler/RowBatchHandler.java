@@ -10,7 +10,10 @@
 package com.litesalt.batch.handler;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -28,6 +31,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import com.litesalt.batch.entity.DBColumnMetaData;
 import com.litesalt.batch.entity.WrapItem;
 import com.litesalt.batch.util.CamelCaseUtils;
 import com.litesalt.batch.util.Reflections;
@@ -61,29 +66,34 @@ public class RowBatchHandler<T> {
 	
 	private List<String> excludeField = new ArrayList<String>();
 	
+	private Map<String, DBColumnMetaData> metaMap = new HashMap<String, DBColumnMetaData>();
+	
 	public RowBatchHandler(JdbcTemplate jdbcTemplate,int submitCapacity,Class<T> clazz) {
 		this.jdbcTemplate = jdbcTemplate;
 		this.queue = new LinkedBlockingQueue<WrapItem<T>>(queueCapacity);
 		this.submitCapacity = submitCapacity;
 		this.clazz = clazz;
-		fields = clazz.getDeclaredFields();
-		excludeField.add("id");
-		excludeField.add("serialVersionUID");
 		
-		rowBatchThread = new Thread(){
-			public void run() {
-				new RowDeal().deal();
+		if(initDBMetaData()){
+			fields = clazz.getDeclaredFields();
+			excludeField.add("id");
+			excludeField.add("serialVersionUID");
+			
+			rowBatchThread = new Thread(){
+				public void run() {
+					new RowDeal().deal();
+				};
 			};
-		};
-		rowBatchThread.start();
-		
-		startTimeMillis = System.currentTimeMillis();
+			rowBatchThread.start();
+			
+			startTimeMillis = System.currentTimeMillis();
+		}
 	}
 	
 	public void insertWithBatch(WrapItem<T> item){
 		try {
-			if(StringUtils.isEmpty(this.insertSql)){
-				this.prepareSql();
+			if(StringUtils.isEmpty(insertSql)){
+				prepareSql();
 			}
 			queue.put(item);
 		} catch (InterruptedException e) {
@@ -139,23 +149,48 @@ public class RowBatchHandler<T> {
 				public void setValues(PreparedStatement ps, int i) throws SQLException {
 					T t = batchList.get(i);
 					Object o = null;
+					DBColumnMetaData metaData = null;
 					int n = 0;
 					for(Field field : fields){
 						if(!excludeField.contains(field.getName())){
 							n++;
 							o = Reflections.invokeGetter(t, field.getName());
+							metaData = metaMap.get(getAliasField(field.getName()));
+							
+							//如果值为null，还要看默认值，如果有默认值，取元数据中的默认值
 							if(o == null){
-								ps.setNull(n, Types.NULL);
-							}else if(o instanceof String){
-								ps.setString(n,(String)o);
-							}else if(o instanceof Long){
-								ps.setLong(n, (Long)o);
-							}else if(o instanceof Integer){
-								ps.setInt(n, (Integer)o);
-							}else if(o instanceof Short){
-								ps.setShort(n, (Short)o);
-							}else if(o instanceof Date){
-								ps.setTimestamp(n, new Timestamp(((Date)o).getTime()));
+								if(metaData.getColumnDef() == null){
+									ps.setNull(n, Types.NULL);
+									continue;
+								}
+								o = metaData.getColumnDef();
+							}
+							
+							switch(metaData.getDataType()){
+								case Types.CHAR:
+									ps.setString(n, (String)o);
+									break;
+								case Types.VARCHAR:
+									ps.setString(n, (String)o);
+									break;
+								case Types.NVARCHAR:
+									ps.setString(n, (String)o);
+									break;
+								case Types.SMALLINT:
+									ps.setShort(n, Short.parseShort(o.toString()));
+									break;
+								case Types.INTEGER:
+									ps.setInt(n, Integer.parseInt(o.toString()));
+									break;
+								case Types.BIGINT:
+									ps.setLong(n, Long.parseLong(o.toString()));
+									break;
+								case Types.TIMESTAMP:
+									ps.setTimestamp(n, new Timestamp(((Date)o).getTime()));
+									break;
+								case Types.DECIMAL:
+									ps.setBigDecimal(n, (BigDecimal)o);
+									break;
 							}
 						}
 					}
@@ -172,16 +207,16 @@ public class RowBatchHandler<T> {
 	
 	private void prepareSql(){
 		StringBuffer sql = new StringBuffer();
-		sql.append(" insert into ").append(getAliasTable(this.clazz.getSimpleName()));
+		sql.append(" insert into ").append(getAliasTable(clazz.getSimpleName()));
 		sql.append("(");
 		int i = 0;
 		int m = 0;
-		for(Field field : this.clazz.getDeclaredFields()){
+		for(Field field : clazz.getDeclaredFields()){
 			i++;
-			if(!this.excludeField.contains(field.getName())){
+			if(!excludeField.contains(field.getName())){
 				m++;
 				sql.append(getAliasField(field.getName()));
-				if(i < this.clazz.getDeclaredFields().length){
+				if(i < clazz.getDeclaredFields().length){
 					sql.append(",");
 				}
 			}
@@ -195,7 +230,7 @@ public class RowBatchHandler<T> {
 			
 		}
 		sql.append(")");
-		this.insertSql = sql.toString();
+		insertSql = sql.toString();
 	}
 	
 	public void shutDownHandler(){
@@ -203,14 +238,30 @@ public class RowBatchHandler<T> {
 			//往队列插入一个关闭的信号，队列处理监听到关闭信号会退出监听
 			WrapItem<T> wrapItem = new WrapItem<T>();
 			wrapItem.setShutdownSignature(true);
-			this.queue.put(wrapItem);
+			queue.put(wrapItem);
 		} catch (InterruptedException e) {
 			logger.error("shut down cause error",e);
 		}
 	}
 	
+	private boolean initDBMetaData(){
+		boolean flag = false;
+		try{
+			DatabaseMetaData metaData = jdbcTemplate.getDataSource().getConnection().getMetaData();
+			ResultSet rs = metaData.getColumns(null, "%", getAliasTable(clazz.getSimpleName()), "%");
+			while(rs.next()){
+				metaMap.put(rs.getString("COLUMN_NAME"), new DBColumnMetaData(rs.getString("COLUMN_NAME"), rs.getInt("DATA_TYPE"), rs.getObject("COLUMN_DEF")));
+			}
+			flag = true;
+		}catch(Exception e){
+			logger.error("init db metadata wrong", e);
+			flag = false;
+		}
+		return flag;
+	}
+	
 	private String getAliasTable(String poName){
-		if(this.aliasMap!= null && this.aliasMap.containsKey("TABLE")){
+		if(aliasMap!= null && aliasMap.containsKey("TABLE")){
 			return aliasMap.get("TABLE");
 		}else{
 			return CamelCaseUtils.toUnderScoreCase(poName);
@@ -218,7 +269,7 @@ public class RowBatchHandler<T> {
 	}
 	
 	private String getAliasField(String fieldName){
-		if(this.aliasMap!= null && this.aliasMap.containsKey(fieldName)){
+		if(aliasMap!= null && aliasMap.containsKey(fieldName)){
 			return aliasMap.get(fieldName);
 		}else{
 			return CamelCaseUtils.toUnderScoreCase(fieldName);
@@ -226,20 +277,20 @@ public class RowBatchHandler<T> {
 	}
 	
 	public void aliasTable(String tableName){
-		if(this.aliasMap == null){
-			this.aliasMap = new HashMap<String, String>();
+		if(aliasMap == null){
+			aliasMap = new HashMap<String, String>();
 		}
-		this.aliasMap.put("TABLE", tableName);
+		aliasMap.put("TABLE", tableName);
 	}
 	
 	public void aliasField(String fieldName,String columnName){
-		if(this.aliasMap == null){
-			this.aliasMap = new HashMap<String, String>();
+		if(aliasMap == null){
+			aliasMap = new HashMap<String, String>();
 		}
-		this.aliasMap.put(fieldName, columnName);
+		aliasMap.put(fieldName, columnName);
 	}
 	
 	public void addExcludeField(String fieldName){
-		this.excludeField.add(fieldName);
+		excludeField.add(fieldName);
 	}
 }
