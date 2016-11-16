@@ -76,6 +76,7 @@ public class RowBatchHandler<T> {
 		
 		if(initDBMetaData()){
 			fields = clazz.getDeclaredFields();
+			prepareSql();
 			excludeField.add("id");
 			excludeField.add("serialVersionUID");
 			
@@ -92,9 +93,6 @@ public class RowBatchHandler<T> {
 	
 	public void insertWithBatch(WrapItem<T> item){
 		try {
-			if(StringUtils.isEmpty(insertSql)){
-				prepareSql();
-			}
 			queue.put(item);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
