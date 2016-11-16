@@ -76,9 +76,8 @@ public class RowBatchHandler<T> {
 		
 		if(initDBMetaData()){
 			fields = clazz.getDeclaredFields();
+			
 			prepareSql();
-			excludeField.add("id");
-			excludeField.add("serialVersionUID");
 			
 			rowBatchThread = new Thread(){
 				public void run() {
@@ -204,6 +203,8 @@ public class RowBatchHandler<T> {
 	}
 	
 	private void prepareSql(){
+		excludeField.add("id");
+		excludeField.add("serialVersionUID");
 		StringBuffer sql = new StringBuffer();
 		sql.append(" insert into ").append(getAliasTable(clazz.getSimpleName()));
 		sql.append("(");
