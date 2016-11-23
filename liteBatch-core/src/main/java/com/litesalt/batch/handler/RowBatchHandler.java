@@ -280,6 +280,10 @@ public class RowBatchHandler<T> {
 			aliasMap = new HashMap<String, String>();
 		}
 		aliasMap.put("TABLE", tableName);
+		//改变表名后要重新加载数据库元信息和准备插入sql
+		if(initDBMetaData()){
+			prepareSql();
+		}
 	}
 	
 	public void aliasField(String fieldName,String columnName){
@@ -287,6 +291,8 @@ public class RowBatchHandler<T> {
 			aliasMap = new HashMap<String, String>();
 		}
 		aliasMap.put(fieldName, columnName);
+		//改变字段名后要重新生成sql
+		prepareSql();
 	}
 	
 	public void addExcludeField(String fieldName){
