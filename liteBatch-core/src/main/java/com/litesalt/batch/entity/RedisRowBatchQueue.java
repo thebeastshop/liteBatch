@@ -15,7 +15,7 @@ import redis.clients.jedis.JedisPoolConfig;
 /**
  * @author Paul-xiong
  * @date 2017年2月26日
- * @description 内存插入队列
+ * @description redis插入队列
  */
 public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 

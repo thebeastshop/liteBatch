@@ -5,11 +5,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import com.litesalt.batch.entity.MemoryRowBatchQueue;
 
 /**
- * 内存批插处理器
- * 
  * @author Paul-xiong
  * @date 2017年2月27日
- * @description
+ * @description 内存批插处理器
  */
 public class MemoryRowBatchHandler<T> extends RowBatchHandler<T> {
 

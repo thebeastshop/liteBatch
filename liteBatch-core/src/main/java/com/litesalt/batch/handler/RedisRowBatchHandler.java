@@ -5,11 +5,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import com.litesalt.batch.entity.RedisRowBatchQueue;
 
 /**
- * 内存批插处理器
- * 
  * @author Paul-xiong
  * @date 2017年2月27日
- * @description
+ * @description redis批插处理器
  */
 public class RedisRowBatchHandler<T> extends RowBatchHandler<T> {
 
