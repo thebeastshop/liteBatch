@@ -2,12 +2,16 @@ package com.litesalt.batch.test;
 
 import java.util.Date;
 import java.util.Random;
+
 import javax.annotation.Resource;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.litesalt.batch.RowBatchListenerBuilder;
 import com.litesalt.batch.listener.RowBatchListener;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -18,7 +22,7 @@ public class TestMain {
 	
 	@Test
 	public void testBatch1() throws Exception{
-		RowBatchListener<Person> rowBatchListener = new RowBatchListener<>(jdbcTemplate, 5000, Person.class);
+		RowBatchListener<Person> rowBatchListener = RowBatchListenerBuilder.buildRedisRowBatchListener(jdbcTemplate, 1, Person.class, "localhost", 6379);
 		try{
 			Random random = new Random();
 			Person person = null;
