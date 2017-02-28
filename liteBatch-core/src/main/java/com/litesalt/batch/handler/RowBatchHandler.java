@@ -182,12 +182,14 @@ public abstract class RowBatchHandler<T> {
 								case Types.CHAR:
 									ps.setString(n, (String) o);
 									break;
+								case Types.BLOB:
 								case Types.VARCHAR:
 									ps.setString(n, (String) o);
 									break;
 								case Types.NVARCHAR:
 									ps.setString(n, (String) o);
 									break;
+								case Types.TINYINT:
 								case Types.SMALLINT:
 									ps.setShort(n, Short.parseShort(o.toString()));
 									break;
