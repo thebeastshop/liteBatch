@@ -26,6 +26,8 @@ public abstract class RowBatchQueue<T> {
 
 	public abstract T take();
 
-	public abstract List<T> take(int len);
+	public abstract List<T> take(long len);
+	
+	public abstract List<T> takeAll();
 
 }

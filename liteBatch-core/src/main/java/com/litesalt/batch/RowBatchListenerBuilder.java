@@ -43,4 +43,23 @@ public class RowBatchListenerBuilder {
 		return listener;
 	}
 
+	/**
+	 * 构建redis批插监听管理器
+	 * 
+	 * @param jdbcTemplate
+	 * @param submitCapacity
+	 * @param clazz
+	 * @param host
+	 * @param port
+	 * @param redisKey
+	 * @return
+	 */
+	public static <T> RowBatchListener<T> buildRedisRowBatchListener(JdbcTemplate jdbcTemplate, int submitCapacity,
+			Class<T> clazz, String host, int port, String redisKey) {
+		RowBatchListener<T> listener = new RowBatchListener<>(jdbcTemplate, submitCapacity, clazz);
+		listener.setRowBatchHandler(
+				new RedisRowBatchHandler<>(jdbcTemplate, submitCapacity, clazz, host, port, redisKey));
+		return listener;
+	}
+
 }

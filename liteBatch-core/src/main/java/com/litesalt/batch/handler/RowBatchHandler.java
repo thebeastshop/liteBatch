@@ -47,8 +47,6 @@ public abstract class RowBatchHandler<T> {
 
 	private String insertSql;
 
-	private int loopSize = 0;
-
 	private int submitCapacity;
 
 	private Thread rowBatchThread;
@@ -96,10 +94,23 @@ public abstract class RowBatchHandler<T> {
 		}
 	}
 
-	public List<T> take(int len) {
+	public List<T> take(long len) {
 		try {
 			if (queue != null) {
 				return queue.take(len);
+			} else {
+				return null;
+			}
+		} catch (Exception e) {
+			logger.error("take is interrupted", e);
+			return null;
+		}
+	}
+	
+	public List<T> takeAll() {
+		try {
+			if (queue != null) {
+				return queue.takeAll();
 			} else {
 				return null;
 			}
@@ -117,6 +128,8 @@ public abstract class RowBatchHandler<T> {
 
 		private final Logger log = Logger.getLogger(RowDeal.class);
 
+		private int loopSize = 0;
+		
 		public void deal() {
 			while (true) {
 				try {

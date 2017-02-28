@@ -47,18 +47,25 @@ public class MemoryRowBatchQueue<T> extends RowBatchQueue<T> {
 	}
 
 	@Override
-	public List<T> take(int len) {
+	public List<T> take(long len) {
 		List<T> rt = new ArrayList<T>();
 		try {
 			while (len > 0) {
-				rt.add(items.take());
+				T item = items.take();
+				if (item != null) {
+					rt.add(item);
+				}
 				len--;
 			}
 		} catch (InterruptedException e) {
 			logger.error("take is interrupted", e);
-			return null;
 		}
 		return rt;
+	}
+
+	@Override
+	public List<T> takeAll() {
+		return take(items.size());
 	}
 
 }

@@ -19,31 +19,39 @@ import redis.clients.jedis.JedisPoolConfig;
  */
 public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 
+	private final static String DEFAULT_HOST = "localhost";
+
+	private final static int DEFAULT_PORT = 6379;
+
+	private final static String DEFAULT_REDIS_KEY = "rowBatchQueue";
+
 	private final Logger logger = LoggerFactory.getLogger(RedisRowBatchQueue.class);
 
 	private JedisPool jedisPool;
 
-	private String buildKey() {
-		return "rowBatchQueue";
-	}
+	private String redisKey;
 
 	// ==================================
 	public RedisRowBatchQueue(Class<T> clazz) {
-		this(clazz, "localhost", 6379);
+		this(clazz, DEFAULT_HOST, DEFAULT_PORT);
 	}
 
 	public RedisRowBatchQueue(Class<T> clazz, String host, int port) {
+		this(clazz, host, port, DEFAULT_REDIS_KEY);
+	}
+
+	public RedisRowBatchQueue(Class<T> clazz, String host, int port, String redisKey) {
 		super(clazz);
 		this.jedisPool = new JedisPool(new JedisPoolConfig(), host, port, 3000);
+		this.redisKey = redisKey;
 	}
 
 	@Override
 	public void put(T t) {
-		String key = buildKey();
-		String value = JSONObject.toJSONString(t);
-		this.logger.debug("start: rpush redis. key={}, value={}", key, value);
 		try (Jedis jedis = this.jedisPool.getResource()) {
-			jedis.lpush(key, value);
+			String value = JSONObject.toJSONString(t);
+			this.logger.debug("start: rpush redis. key={}, value={}", redisKey, value);
+			jedis.rpush(redisKey, value);
 		} catch (Exception e) {
 			this.logger.error("Redis exception: {}", e.getMessage(), e);
 		}
@@ -51,10 +59,9 @@ public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 
 	@Override
 	public T take() {
-		String key = buildKey();
 		try (Jedis jedis = this.jedisPool.getResource()) {
-			String value = jedis.rpop(key);
-			return (T) JSONObject.parseObject(value, clazz);
+			String value = jedis.lpop(redisKey);
+			return JSONObject.parseObject(value, clazz);
 		} catch (Exception e) {
 			this.logger.error("Redis exception: {}", e.getMessage(), e);
 			return null;
@@ -62,16 +69,33 @@ public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 	}
 
 	@Override
-	public List<T> take(int len) {
+	public List<T> take(long len) {
 		List<T> rt = new ArrayList<T>();
-		while (len > 0) {
-			T item = take();
-			if (item != null) {
-				rt.add(item);
+		try (Jedis jedis = this.jedisPool.getResource()) {
+			if (len > 0) {
+				while (len > 0) {
+					T item = take();
+					if (item != null) {
+						rt.add(item);
+					}
+					len--;
+				}
 			}
-			len--;
+		} catch (Exception e) {
+			this.logger.error("Redis exception: {}", e.getMessage(), e);
 		}
 		return rt;
+	}
+
+	@Override
+	public List<T> takeAll() {
+		try (Jedis jedis = this.jedisPool.getResource()) {
+			Long len = jedis.llen(redisKey);
+			return take(len != null ? len : 0);
+		} catch (Exception e) {
+			this.logger.error("Redis exception: {}", e.getMessage(), e);
+			return new ArrayList<T>();
+		}
 	}
 
 }
