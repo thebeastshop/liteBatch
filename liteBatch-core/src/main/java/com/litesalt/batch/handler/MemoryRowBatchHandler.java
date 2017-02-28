@@ -11,7 +11,7 @@ import com.litesalt.batch.entity.MemoryRowBatchQueue;
  */
 public class MemoryRowBatchHandler<T> extends RowBatchHandler<T> {
 
-	public MemoryRowBatchHandler(JdbcTemplate jdbcTemplate, int submitCapacity, Class<T> clazz) {
+	public MemoryRowBatchHandler(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz) {
 		super(jdbcTemplate, submitCapacity, clazz);
 		this.queue = new MemoryRowBatchQueue<T>();
 	}

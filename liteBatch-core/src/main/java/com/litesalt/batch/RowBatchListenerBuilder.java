@@ -2,6 +2,7 @@ package com.litesalt.batch;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.litesalt.batch.handler.MemoryRowBatchHandler;
 import com.litesalt.batch.handler.RedisRowBatchHandler;
 import com.litesalt.batch.listener.RowBatchListener;
 
@@ -20,9 +21,10 @@ public class RowBatchListenerBuilder {
 	 * @param clazz
 	 * @return
 	 */
-	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, int submitCapacity,
+	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity,
 			Class<T> clazz) {
-		RowBatchListener<T> listener = new RowBatchListener<>(jdbcTemplate, submitCapacity, clazz);
+		RowBatchListener<T> listener = new RowBatchListener<>();
+		listener.setRowBatchHandler(new MemoryRowBatchHandler<>(jdbcTemplate, submitCapacity, clazz));
 		return listener;
 	}
 
@@ -36,9 +38,9 @@ public class RowBatchListenerBuilder {
 	 * @param port
 	 * @return
 	 */
-	public static <T> RowBatchListener<T> buildRedisRowBatchListener(JdbcTemplate jdbcTemplate, int submitCapacity,
+	public static <T> RowBatchListener<T> buildRedisRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity,
 			Class<T> clazz, String host, int port) {
-		RowBatchListener<T> listener = new RowBatchListener<>(jdbcTemplate, submitCapacity, clazz);
+		RowBatchListener<T> listener = new RowBatchListener<>();
 		listener.setRowBatchHandler(new RedisRowBatchHandler<>(jdbcTemplate, submitCapacity, clazz, host, port));
 		return listener;
 	}
@@ -54,9 +56,9 @@ public class RowBatchListenerBuilder {
 	 * @param redisKey
 	 * @return
 	 */
-	public static <T> RowBatchListener<T> buildRedisRowBatchListener(JdbcTemplate jdbcTemplate, int submitCapacity,
+	public static <T> RowBatchListener<T> buildRedisRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity,
 			Class<T> clazz, String host, int port, String redisKey) {
-		RowBatchListener<T> listener = new RowBatchListener<>(jdbcTemplate, submitCapacity, clazz);
+		RowBatchListener<T> listener = new RowBatchListener<>();
 		listener.setRowBatchHandler(
 				new RedisRowBatchHandler<>(jdbcTemplate, submitCapacity, clazz, host, port, redisKey));
 		return listener;

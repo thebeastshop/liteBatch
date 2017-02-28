@@ -11,12 +11,12 @@ import com.litesalt.batch.entity.RedisRowBatchQueue;
  */
 public class RedisRowBatchHandler<T> extends RowBatchHandler<T> {
 
-	public RedisRowBatchHandler(JdbcTemplate jdbcTemplate, int submitCapacity, Class<T> clazz, String host, int port) {
+	public RedisRowBatchHandler(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, String host, int port) {
 		super(jdbcTemplate, submitCapacity, clazz);
 		this.queue = new RedisRowBatchQueue<T>(clazz, host, port);
 	}
 
-	public RedisRowBatchHandler(JdbcTemplate jdbcTemplate, int submitCapacity, Class<T> clazz, String host, int port,
+	public RedisRowBatchHandler(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, String host, int port,
 			String redisKey) {
 		super(jdbcTemplate, submitCapacity, clazz);
 		this.queue = new RedisRowBatchQueue<T>(clazz, host, port, redisKey);

@@ -12,9 +12,7 @@ package com.litesalt.batch.listener;
 import java.util.Collection;
 
 import org.apache.log4j.Logger;
-import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.litesalt.batch.handler.MemoryRowBatchHandler;
 import com.litesalt.batch.handler.RowBatchHandler;
 
 /**
@@ -26,9 +24,8 @@ public class RowBatchListener<T> {
 
 	private RowBatchHandler<T> rowBatchHandler;
 
-	public RowBatchListener(JdbcTemplate jdbcTemplate, int submitCapacity, Class<T> clazz) {
-		this.rowBatchHandler = new MemoryRowBatchHandler<>(jdbcTemplate, submitCapacity, clazz);
-		log.info("开始监听" + clazz.getSimpleName() + "的批次插入");
+	public RowBatchListener() {
+		log.info("开始监听批次插入");
 	}
 
 	public RowBatchHandler<T> getRowBatchHandler() {

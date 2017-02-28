@@ -47,8 +47,6 @@ public abstract class RowBatchHandler<T> {
 
 	private String insertSql;
 
-	private int submitCapacity;
-
 	private Thread rowBatchThread;
 
 	private Field[] fields;
@@ -63,9 +61,8 @@ public abstract class RowBatchHandler<T> {
 
 	private boolean close = false;
 
-	public RowBatchHandler(JdbcTemplate jdbcTemplate, int submitCapacity, Class<T> clazz) {
+	public RowBatchHandler(JdbcTemplate jdbcTemplate, final long submitCapacity, Class<T> clazz) {
 		this.jdbcTemplate = jdbcTemplate;
-		this.submitCapacity = submitCapacity;
 		this.clazz = clazz;
 
 		if (initDBMetaData()) {
@@ -75,7 +72,7 @@ public abstract class RowBatchHandler<T> {
 
 			rowBatchThread = new Thread() {
 				public void run() {
-					new RowDeal().deal();
+					new RowDeal(submitCapacity).deal();
 				};
 			};
 			rowBatchThread.start();
@@ -106,7 +103,7 @@ public abstract class RowBatchHandler<T> {
 			return null;
 		}
 	}
-	
+
 	public List<T> takeAll() {
 		try {
 			if (queue != null) {
@@ -124,12 +121,23 @@ public abstract class RowBatchHandler<T> {
 		return clazz;
 	}
 
-	private class RowDeal {
+	public class RowDeal {
 
 		private final Logger log = Logger.getLogger(RowDeal.class);
 
-		private int loopSize = 0;
-		
+		private long submitCapacity = 1;
+
+		private long loopSize = 0;
+
+		public RowDeal() {
+			super();
+		}
+
+		public RowDeal(long submitCapacity) {
+			super();
+			this.submitCapacity = submitCapacity;
+		}
+
 		public void deal() {
 			while (true) {
 				try {
