@@ -3,6 +3,7 @@ package com.litesalt.batch.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +12,8 @@ import com.alibaba.fastjson.JSONObject;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Response;
 
 /**
  * @author Paul-xiong
@@ -48,41 +51,57 @@ public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 
 	@Override
 	public void put(T t) {
-		try (Jedis jedis = this.jedisPool.getResource()) {
+		Jedis jedis = null;
+		try {
+			jedis = this.jedisPool.getResource();
 			String value = JSONObject.toJSONString(t);
 			this.logger.debug("start: rpush redis. key={}, value={}", redisKey, value);
 			jedis.rpush(redisKey, value);
 		} catch (Exception e) {
 			this.logger.error("Redis exception: {}", e.getMessage(), e);
+		} finally {
+			if (jedis != null) {
+				jedis.close();
+			}
 		}
 	}
 
 	@Override
 	public T take() {
-		try (Jedis jedis = this.jedisPool.getResource()) {
-			String value = jedis.lpop(redisKey);
-			return JSONObject.parseObject(value, clazz);
-		} catch (Exception e) {
-			this.logger.error("Redis exception: {}", e.getMessage(), e);
-			return null;
+		List<T> take = take(1);
+		if (take != null && take.size() > 0) {
+			return take.get(0);
 		}
+		return null;
 	}
 
 	@Override
 	public List<T> take(long len) {
 		List<T> rt = new ArrayList<T>();
-		try (Jedis jedis = this.jedisPool.getResource()) {
+		Jedis jedis = null;
+		try {
 			if (len > 0) {
+				jedis = this.jedisPool.getResource();
+				Pipeline pipe = jedis.pipelined();
+				List<Response<String>> responseList = new ArrayList<Response<String>>();
 				while (len > 0) {
-					T item = take();
-					if (item != null) {
-						rt.add(item);
-					}
+					responseList.add(pipe.lpop(redisKey));
 					len--;
+				}
+				pipe.sync();
+				for (Response<String> response : responseList) {
+					String item = response.get();
+					if (StringUtils.isNotBlank(item)) {
+						rt.add(JSONObject.parseObject(item, clazz));
+					}
 				}
 			}
 		} catch (Exception e) {
 			this.logger.error("Redis exception: {}", e.getMessage(), e);
+		} finally {
+			if (jedis != null) {
+				jedis.close();
+			}
 		}
 		return rt;
 	}
