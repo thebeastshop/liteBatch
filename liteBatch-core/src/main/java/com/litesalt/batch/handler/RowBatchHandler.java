@@ -177,7 +177,6 @@ public abstract class RowBatchHandler<T> {
 		}
 
 		private void rowBatch(final List<T> batchList) throws Exception {
-			lastBatchTime = new Date();
 			log.info("开始批次插入");
 			if (batchList != null && batchList.size() > 0) {
 				jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
@@ -240,6 +239,7 @@ public abstract class RowBatchHandler<T> {
 					}
 				});
 			}
+			lastBatchTime = new Date();
 		}
 	}
 
