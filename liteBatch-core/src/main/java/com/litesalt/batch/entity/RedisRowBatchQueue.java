@@ -89,8 +89,9 @@ public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 					len--;
 				}
 				pipe.sync();
+				String item = null;
 				for (Response<String> response : responseList) {
-					String item = response.get();
+					item = response.get();
 					if (StringUtils.isNotBlank(item)) {
 						rt.add(JSONObject.parseObject(item, clazz));
 					}

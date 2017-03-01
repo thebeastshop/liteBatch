@@ -263,8 +263,7 @@ public abstract class RowBatchHandler<T> {
 			DatabaseMetaData metaData = jdbcTemplate.getDataSource().getConnection().getMetaData();
 			ResultSet rs = metaData.getColumns(null, "%", getAliasTable(clazz.getSimpleName()), "%");
 			while (rs.next()) {
-				metaMap.put(rs.getString("COLUMN_NAME"), new DBColumnMetaData(rs.getString("COLUMN_NAME"),
-						rs.getInt("DATA_TYPE"), rs.getObject("COLUMN_DEF")));
+				metaMap.put(rs.getString("COLUMN_NAME"), new DBColumnMetaData(rs.getString("COLUMN_NAME"),rs.getInt("DATA_TYPE"), rs.getObject("COLUMN_DEF")));
 			}
 			flag = true;
 		} catch (Exception e) {
