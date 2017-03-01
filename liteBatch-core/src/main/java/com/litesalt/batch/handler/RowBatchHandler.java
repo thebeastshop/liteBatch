@@ -45,6 +45,8 @@ public abstract class RowBatchHandler<T> {
 
 	private Class<T> clazz;
 
+	private long loopSize = 0;
+
 	private long submitCapacity;
 
 	private String insertSql;
@@ -87,6 +89,7 @@ public abstract class RowBatchHandler<T> {
 	public void insertWithBatch(T item) {
 		try {
 			if (queue != null) {
+				loopSize++;
 				queue.put(item);
 			}
 		} catch (Exception e) {
@@ -128,8 +131,6 @@ public abstract class RowBatchHandler<T> {
 
 		private final Logger log = Logger.getLogger(RowDeal.class);
 
-		private long loopSize = 0;
-
 		public void deal() {
 			while (true) {
 				try {
@@ -139,7 +140,6 @@ public abstract class RowBatchHandler<T> {
 						loopSize = 0;
 						break;
 					}
-					loopSize++;
 					if (loopSize >= submitCapacity) {
 						rowBatch(take(submitCapacity));
 						loopSize = 0;
@@ -251,10 +251,6 @@ public abstract class RowBatchHandler<T> {
 
 	public void shutDownHandler() {
 		try {
-			// 往队列插入一个关闭的信号，队列处理监听到关闭信号会退出监听
-			// WrapItem<T> wrapItem = new WrapItem<T>();
-			// wrapItem.setShutdownSignature(true);
-			// queue.put(wrapItem);
 			close = true;
 		} catch (Exception e) {
 			logger.error("shut down cause error", e);
