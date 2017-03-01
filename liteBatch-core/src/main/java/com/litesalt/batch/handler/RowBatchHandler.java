@@ -136,7 +136,7 @@ public abstract class RowBatchHandler<T> {
 				try {
 					if (close) {
 						// 如果为关闭的信号，则做完剩余的缓冲List里的数据，线程退出
-						rowBatch(take(submitCapacity));
+						rowBatch(takeAll());
 						loopSize = 0;
 						break;
 					}

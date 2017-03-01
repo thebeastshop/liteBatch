@@ -26,13 +26,18 @@ public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 
 	private final static int DEFAULT_PORT = 6379;
 
-	private final static String DEFAULT_REDIS_KEY = "rowBatchQueue";
-
 	private final Logger logger = LoggerFactory.getLogger(RedisRowBatchQueue.class);
 
 	private JedisPool jedisPool;
 
-	private String redisKey;
+	/**
+	 * 生成redis队列key
+	 * 
+	 * @return
+	 */
+	private String buildKey() {
+		return new StringBuilder("ROW_BATCH_QUEUE_").append(clazz.getSimpleName().toUpperCase()).toString();
+	}
 
 	// ==================================
 	public RedisRowBatchQueue(Class<T> clazz) {
@@ -40,19 +45,15 @@ public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 	}
 
 	public RedisRowBatchQueue(Class<T> clazz, String host, int port) {
-		this(clazz, host, port, DEFAULT_REDIS_KEY);
-	}
-
-	public RedisRowBatchQueue(Class<T> clazz, String host, int port, String redisKey) {
 		super(clazz);
 		this.jedisPool = new JedisPool(new JedisPoolConfig(), host, port, 3000);
-		this.redisKey = redisKey;
 	}
 
 	@Override
 	public void put(T t) {
 		Jedis jedis = null;
 		try {
+			String redisKey = buildKey();
 			jedis = this.jedisPool.getResource();
 			String value = JSONObject.toJSONString(t);
 			this.logger.debug("start: rpush redis. key={}, value={}", redisKey, value);
@@ -81,6 +82,7 @@ public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 		Jedis jedis = null;
 		try {
 			if (len > 0) {
+				String redisKey = buildKey();
 				jedis = this.jedisPool.getResource();
 				Pipeline pipe = jedis.pipelined();
 				List<Response<String>> responseList = new ArrayList<Response<String>>();
@@ -109,12 +111,19 @@ public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 
 	@Override
 	public List<T> takeAll() {
-		try (Jedis jedis = this.jedisPool.getResource()) {
+		Jedis jedis = null;
+		try {
+			jedis = this.jedisPool.getResource();
+			String redisKey = buildKey();
 			Long len = jedis.llen(redisKey);
 			return take(len != null ? len : 0);
 		} catch (Exception e) {
 			this.logger.error("Redis exception: {}", e.getMessage(), e);
 			return new ArrayList<T>();
+		} finally {
+			if (jedis != null) {
+				jedis.close();
+			}
 		}
 	}
 
