@@ -22,6 +22,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -131,7 +133,28 @@ public abstract class RowBatchHandler<T> {
 
 		private final Logger log = Logger.getLogger(RowDeal.class);
 
+		private Date lastBatchTime = new Date();
+
 		public void deal() {
+			// XXX：处理队列中剩余数据的定时器(今后可以把它抽出来作为一个单独的类，名字可以叫队列健康状态监视器)
+			Timer timer = new Timer();
+			final long time = 1800 * 1000; // 定时时间
+			timer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					Date now = new Date();
+					if (now.getTime() - lastBatchTime.getTime() > time) {
+						log.info("队列健康状态监视器开始工作");
+						try {
+							rowBatch(takeAll());
+						} catch (Exception e) {
+							log.error("批次插入发生异常", e);
+						}
+					}
+				}
+
+			}, time);
+			// ==============================================================================
 			while (true) {
 				try {
 					if (close) {
@@ -154,6 +177,7 @@ public abstract class RowBatchHandler<T> {
 		}
 
 		private void rowBatch(final List<T> batchList) throws Exception {
+			lastBatchTime = new Date();
 			log.info("开始批次插入");
 			if (batchList != null && batchList.size() > 0) {
 				jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
@@ -263,7 +287,7 @@ public abstract class RowBatchHandler<T> {
 			DatabaseMetaData metaData = jdbcTemplate.getDataSource().getConnection().getMetaData();
 			ResultSet rs = metaData.getColumns(null, "%", getAliasTable(clazz.getSimpleName()), "%");
 			while (rs.next()) {
-				metaMap.put(rs.getString("COLUMN_NAME"), new DBColumnMetaData(rs.getString("COLUMN_NAME"),rs.getInt("DATA_TYPE"), rs.getObject("COLUMN_DEF")));
+				metaMap.put(rs.getString("COLUMN_NAME"), new DBColumnMetaData(rs.getString("COLUMN_NAME"), rs.getInt("DATA_TYPE"), rs.getObject("COLUMN_DEF")));
 			}
 			flag = true;
 		} catch (Exception e) {
