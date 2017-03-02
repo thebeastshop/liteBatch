@@ -135,7 +135,7 @@ public abstract class RowBatchHandler<T> extends Observable {
 
 	public RowBatchHandler(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz) {
 		// ======添加观察者=====
-		this.addObserver(new QueueStatusMonitor<T>());
+		this.addObserver(new QueueStatusMonitor<T>(this));
 		// ===================
 		this.jdbcTemplate = jdbcTemplate;
 		this.clazz = clazz;
@@ -221,7 +221,6 @@ public abstract class RowBatchHandler<T> extends Observable {
 			if (queue != null) {
 				queue.put(item);
 				loopSize.addAndGet(1);
-
 				if (loopSize.get() >= submitCapacity) {
 					threadPool.submit(new Thread() {
 						@Override
