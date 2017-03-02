@@ -24,6 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -47,7 +51,7 @@ public abstract class RowBatchHandler<T> {
 
 	private Class<T> clazz;
 
-	private long loopSize = 0;
+	private AtomicInteger loopSize = new AtomicInteger(0);
 
 	private long submitCapacity;
 
@@ -64,9 +68,11 @@ public abstract class RowBatchHandler<T> {
 	private List<String> excludeField = new ArrayList<String>();
 
 	private Map<String, DBColumnMetaData> metaMap = new HashMap<String, DBColumnMetaData>();
+	
+	private ExecutorService threadPool = Executors.newFixedThreadPool(10);
 
 	private boolean close = false;
-
+	
 	public RowBatchHandler(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz) {
 		this.jdbcTemplate = jdbcTemplate;
 		this.clazz = clazz;
@@ -91,14 +97,24 @@ public abstract class RowBatchHandler<T> {
 	public void insertWithBatch(T item) {
 		try {
 			if (queue != null) {
-				loopSize++;
+				loopSize.addAndGet(1);
 				queue.put(item);
+				
+				if(loopSize.get() > submitCapacity){
+					threadPool.submit(new Thread(){
+						@Override
+						public void run() {
+							//TODO
+						}
+					});
+					loopSize.set(0);
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-
+	
 	public List<T> take(long len) {
 		try {
 			if (queue != null) {
@@ -160,12 +176,12 @@ public abstract class RowBatchHandler<T> {
 					if (close) {
 						// 如果为关闭的信号，则做完剩余的缓冲List里的数据，线程退出
 						rowBatch(takeAll());
-						loopSize = 0;
+						loopSize.set(0);
 						break;
 					}
-					if (loopSize >= submitCapacity) {
+					if (loopSize.get() >= submitCapacity) {
 						rowBatch(take(submitCapacity));
-						loopSize = 0;
+						loopSize.set(0);
 					}
 				} catch (Exception e) {
 					log.error("批次插入发生异常", e);
