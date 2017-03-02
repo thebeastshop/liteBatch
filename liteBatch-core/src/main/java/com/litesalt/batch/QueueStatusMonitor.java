@@ -25,20 +25,20 @@ public class QueueStatusMonitor<T> implements Observer {
 
 	private Timer timer = new Timer();;
 
-	private Observable o;
-
 	public QueueStatusMonitor() {
+		this(null);
+	}
+
+	public QueueStatusMonitor(final RowBatchHandler<T> handler) {
 		super();
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
 				try {
-					if (o != null && o instanceof RowBatchHandler) {
+					if (handler != null) {
 						Date now = new Date();
 						if (now.getTime() - lastBatchTime.getTime() > time) {
 							log.info("队列健康状态监视器开始工作");
-							@SuppressWarnings("unchecked")
-							RowBatchHandler<T> handler = (RowBatchHandler<T>) o;
 							handler.rowBatch(handler.takeAll());
 						}
 					}
@@ -52,9 +52,6 @@ public class QueueStatusMonitor<T> implements Observer {
 	@Override
 	public void update(Observable o, Object arg) {
 		lastBatchTime = new Date();
-		if (this.o == null) {
-			this.o = o;
-		}
 	}
 
 }
