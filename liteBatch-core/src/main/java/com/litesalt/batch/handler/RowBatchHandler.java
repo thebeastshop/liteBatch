@@ -180,6 +180,9 @@ public abstract class RowBatchHandler<T> extends Observable {
 								ps.setString(n, (String) o);
 								break;
 							case Types.BLOB:
+							case Types.LONGVARBINARY:
+								ps.setBytes(n, (byte[]) o);
+								break;
 							case Types.VARCHAR:
 								ps.setString(n, (String) o);
 								break;
