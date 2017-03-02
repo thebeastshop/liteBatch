@@ -39,7 +39,6 @@ public class TestMain {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			// rowBatchListener.closeListener();
 		}
 
 		System.in.read();
@@ -68,7 +67,6 @@ public class TestMain {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			rowBatchListener.closeListener();
 		}
 
 		System.in.read();

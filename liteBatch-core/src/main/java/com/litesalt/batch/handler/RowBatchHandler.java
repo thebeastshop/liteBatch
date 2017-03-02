@@ -22,17 +22,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.Executor;
+import java.util.Observable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.litesalt.batch.QueueStatusMonitor;
 import com.litesalt.batch.entity.DBColumnMetaData;
 import com.litesalt.batch.entity.RowBatchQueue;
 import com.litesalt.batch.util.CamelCaseUtils;
@@ -41,7 +40,7 @@ import com.litesalt.batch.util.Reflections;
 /**
  * 批插处理器
  */
-public abstract class RowBatchHandler<T> {
+public abstract class RowBatchHandler<T> extends Observable {
 
 	protected final Logger logger = Logger.getLogger(RowBatchHandler.class);
 
@@ -51,13 +50,11 @@ public abstract class RowBatchHandler<T> {
 
 	private Class<T> clazz;
 
-	private AtomicInteger loopSize = new AtomicInteger(0);
+	private AtomicLong loopSize = new AtomicLong(0);
 
 	private long submitCapacity;
 
 	private String insertSql;
-
-	private Thread rowBatchThread;
 
 	private Field[] fields;
 
@@ -68,197 +65,10 @@ public abstract class RowBatchHandler<T> {
 	private List<String> excludeField = new ArrayList<String>();
 
 	private Map<String, DBColumnMetaData> metaMap = new HashMap<String, DBColumnMetaData>();
-	
+
 	private ExecutorService threadPool = Executors.newFixedThreadPool(10);
 
-	private boolean close = false;
-	
-	public RowBatchHandler(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz) {
-		this.jdbcTemplate = jdbcTemplate;
-		this.clazz = clazz;
-		this.submitCapacity = submitCapacity;
-
-		if (initDBMetaData()) {
-			fields = clazz.getDeclaredFields();
-
-			prepareSql();
-
-			rowBatchThread = new Thread() {
-				public void run() {
-					new RowDeal().deal();
-				};
-			};
-			rowBatchThread.start();
-
-			startTimeMillis = System.currentTimeMillis();
-		}
-	}
-
-	public void insertWithBatch(T item) {
-		try {
-			if (queue != null) {
-				loopSize.addAndGet(1);
-				queue.put(item);
-				
-				if(loopSize.get() > submitCapacity){
-					threadPool.submit(new Thread(){
-						@Override
-						public void run() {
-							//TODO
-						}
-					});
-					loopSize.set(0);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public List<T> take(long len) {
-		try {
-			if (queue != null) {
-				return queue.take(len);
-			} else {
-				return null;
-			}
-		} catch (Exception e) {
-			logger.error("take is interrupted", e);
-			return null;
-		}
-	}
-
-	public List<T> takeAll() {
-		try {
-			if (queue != null) {
-				return queue.takeAll();
-			} else {
-				return null;
-			}
-		} catch (Exception e) {
-			logger.error("take is interrupted", e);
-			return null;
-		}
-	}
-
-	public Class<T> getClazz() {
-		return clazz;
-	}
-
-	private class RowDeal {
-
-		private final Logger log = Logger.getLogger(RowDeal.class);
-
-		private Date lastBatchTime = new Date();
-
-		public void deal() {
-			// XXX：处理队列中剩余数据的定时器(今后可以把它抽出来作为一个单独的类，名字可以叫队列健康状态监视器)
-			Timer timer = new Timer();
-			final long time = 1800 * 1000; // 定时时间
-			timer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					Date now = new Date();
-					if (now.getTime() - lastBatchTime.getTime() > time) {
-						log.info("队列健康状态监视器开始工作");
-						try {
-							rowBatch(takeAll());
-						} catch (Exception e) {
-							log.error("批次插入发生异常", e);
-						}
-					}
-				}
-
-			}, time);
-			// ==============================================================================
-			while (true) {
-				try {
-					if (close) {
-						// 如果为关闭的信号，则做完剩余的缓冲List里的数据，线程退出
-						rowBatch(takeAll());
-						loopSize.set(0);
-						break;
-					}
-					if (loopSize.get() >= submitCapacity) {
-						rowBatch(take(submitCapacity));
-						loopSize.set(0);
-					}
-				} catch (Exception e) {
-					log.error("批次插入发生异常", e);
-					break;
-				}
-			}
-			logger.info("this batch spend " + (System.currentTimeMillis() - startTimeMillis) + " millisecond");
-			log.info("linstenr is shut down!");
-		}
-
-		private void rowBatch(final List<T> batchList) throws Exception {
-			log.info("开始批次插入");
-			if (batchList != null && batchList.size() > 0) {
-				jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
-					@Override
-					public void setValues(PreparedStatement ps, int i) throws SQLException {
-						T t = batchList.get(i);
-						Object o = null;
-						DBColumnMetaData metaData = null;
-						int n = 0;
-						for (Field field : fields) {
-							if (!excludeField.contains(field.getName())) {
-								n++;
-								o = Reflections.invokeGetter(t, field.getName());
-								metaData = metaMap.get(getAliasField(field.getName()));
-
-								// 如果值为null，还要看默认值，如果有默认值，取元数据中的默认值
-								if (o == null) {
-									if (metaData.getColumnDef() == null) {
-										ps.setNull(n, Types.NULL);
-										continue;
-									}
-									o = metaData.getColumnDef();
-								}
-
-								switch (metaData.getDataType()) {
-								case Types.CHAR:
-									ps.setString(n, (String) o);
-									break;
-								case Types.BLOB:
-								case Types.VARCHAR:
-									ps.setString(n, (String) o);
-									break;
-								case Types.NVARCHAR:
-									ps.setString(n, (String) o);
-									break;
-								case Types.TINYINT:
-								case Types.SMALLINT:
-									ps.setShort(n, Short.parseShort(o.toString()));
-									break;
-								case Types.INTEGER:
-									ps.setInt(n, Integer.parseInt(o.toString()));
-									break;
-								case Types.BIGINT:
-									ps.setLong(n, Long.parseLong(o.toString()));
-									break;
-								case Types.TIMESTAMP:
-									ps.setTimestamp(n, new Timestamp(((Date) o).getTime()));
-									break;
-								case Types.DECIMAL:
-									ps.setBigDecimal(n, (BigDecimal) o);
-									break;
-								}
-							}
-						}
-					}
-
-					@Override
-					public int getBatchSize() {
-						return batchList.size();
-					}
-				});
-			}
-			lastBatchTime = new Date();
-		}
-	}
-
+	// ================private==================
 	private void prepareSql() {
 		excludeField.add("id");
 		excludeField.add("serialVersionUID");
@@ -287,14 +97,6 @@ public abstract class RowBatchHandler<T> {
 		}
 		sql.append(")");
 		insertSql = sql.toString();
-	}
-
-	public void shutDownHandler() {
-		try {
-			close = true;
-		} catch (Exception e) {
-			logger.error("shut down cause error", e);
-		}
 	}
 
 	private boolean initDBMetaData() {
@@ -327,6 +129,149 @@ public abstract class RowBatchHandler<T> {
 		} else {
 			return CamelCaseUtils.toUnderScoreCase(fieldName);
 		}
+	}
+
+	// ========================================
+
+	public RowBatchHandler(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz) {
+		// ======添加观察者=====
+		this.addObserver(new QueueStatusMonitor<T>());
+		// ===================
+		this.jdbcTemplate = jdbcTemplate;
+		this.clazz = clazz;
+		this.submitCapacity = submitCapacity;
+
+		if (initDBMetaData()) {
+			fields = clazz.getDeclaredFields();
+
+			prepareSql();
+
+			startTimeMillis = System.currentTimeMillis();
+		}
+	}
+
+	public void rowBatch(final List<T> batchList) throws Exception {
+		logger.info("开始批次插入");
+		if (batchList != null && batchList.size() > 0) {
+			jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
+				@Override
+				public void setValues(PreparedStatement ps, int i) throws SQLException {
+					T t = batchList.get(i);
+					Object o = null;
+					DBColumnMetaData metaData = null;
+					int n = 0;
+					for (Field field : fields) {
+						if (!excludeField.contains(field.getName())) {
+							n++;
+							o = Reflections.invokeGetter(t, field.getName());
+							metaData = metaMap.get(getAliasField(field.getName()));
+
+							// 如果值为null，还要看默认值，如果有默认值，取元数据中的默认值
+							if (o == null) {
+								if (metaData.getColumnDef() == null) {
+									ps.setNull(n, Types.NULL);
+									continue;
+								}
+								o = metaData.getColumnDef();
+							}
+
+							switch (metaData.getDataType()) {
+							case Types.CHAR:
+								ps.setString(n, (String) o);
+								break;
+							case Types.BLOB:
+							case Types.VARCHAR:
+								ps.setString(n, (String) o);
+								break;
+							case Types.NVARCHAR:
+								ps.setString(n, (String) o);
+								break;
+							case Types.TINYINT:
+							case Types.SMALLINT:
+								ps.setShort(n, Short.parseShort(o.toString()));
+								break;
+							case Types.INTEGER:
+								ps.setInt(n, Integer.parseInt(o.toString()));
+								break;
+							case Types.BIGINT:
+								ps.setLong(n, Long.parseLong(o.toString()));
+								break;
+							case Types.TIMESTAMP:
+								ps.setTimestamp(n, new Timestamp(((Date) o).getTime()));
+								break;
+							case Types.DECIMAL:
+								ps.setBigDecimal(n, (BigDecimal) o);
+								break;
+							}
+						}
+					}
+				}
+
+				@Override
+				public int getBatchSize() {
+					return batchList.size();
+				}
+			});
+			logger.info("this batch spend " + (System.currentTimeMillis() - startTimeMillis) + " millisecond");
+		}
+	}
+
+	public void insertWithBatch(T item) {
+		try {
+			if (queue != null) {
+				loopSize.addAndGet(1);
+				queue.put(item);
+
+				if (loopSize.get() >= submitCapacity) {
+					threadPool.submit(new Thread() {
+						@Override
+						public void run() {
+							try {
+								rowBatch(take(submitCapacity));
+							} catch (Exception e) {
+								logger.error("批次插入发生异常", e);
+							}
+						}
+					});
+					loopSize.set(0);
+					// 向观察者发送通知
+					this.setChanged();
+					this.notifyObservers();
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public List<T> take(long len) {
+		try {
+			if (queue != null) {
+				return queue.take(len);
+			} else {
+				return null;
+			}
+		} catch (Exception e) {
+			logger.error("take is interrupted", e);
+			return null;
+		}
+	}
+
+	public List<T> takeAll() {
+		try {
+			if (queue != null) {
+				return queue.takeAll();
+			} else {
+				return null;
+			}
+		} catch (Exception e) {
+			logger.error("take is interrupted", e);
+			return null;
+		}
+	}
+
+	public Class<T> getClazz() {
+		return clazz;
 	}
 
 	public void aliasTable(String tableName) {

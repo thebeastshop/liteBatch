@@ -50,10 +50,6 @@ public class RowBatchListener<T> {
 		}
 	}
 
-	public void closeListener() {
-		this.rowBatchHandler.shutDownHandler();
-	}
-
 	public void aliasTable(String tableName) {
 		this.rowBatchHandler.aliasTable(tableName);
 	}
