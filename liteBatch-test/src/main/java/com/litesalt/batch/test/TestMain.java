@@ -22,12 +22,16 @@ public class TestMain {
 
 	@Test
 	public void testBatch1() throws Exception {
-		RowBatchListener<Person> rowBatchListener = RowBatchListenerBuilder.buildRedisRowBatchListener(jdbcTemplate, 5000, Person.class, "localhost",
-				6379);
+		long start = System.currentTimeMillis();
+		RowBatchListener<Person> rowBatchListener = RowBatchListenerBuilder.buildRedisRowBatchListener(jdbcTemplate, 10000, Person.class, "192.168.20.48",
+				6379,null);
+		
+//		RowBatchListener<Person> rowBatchListener = RowBatchListenerBuilder.buildMemoryRowBatchListener(jdbcTemplate, 5000, Person.class);
+		
 		try {
 			Random random = new Random();
 			Person person = null;
-			for (int i = 0; i < 66000; i++) {
+			for (int i = 0; i < 5000; i++) {
 				person = new Person();
 				person.setAge(random.nextInt(100));
 				person.setAddress("XX马路1号");
@@ -40,7 +44,8 @@ public class TestMain {
 			e.printStackTrace();
 		} finally {
 		}
-
+		long end = System.currentTimeMillis();
+		System.out.println("耗时"+(end-start));
 		System.in.read();
 	}
 

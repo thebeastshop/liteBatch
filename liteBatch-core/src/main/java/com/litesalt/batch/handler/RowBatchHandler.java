@@ -58,8 +58,6 @@ public abstract class RowBatchHandler<T> extends Observable {
 
 	private Field[] fields;
 
-	private long startTimeMillis;
-
 	private Map<String, String> aliasMap;
 
 	private List<String> excludeField = new ArrayList<String>();
@@ -145,12 +143,11 @@ public abstract class RowBatchHandler<T> extends Observable {
 			fields = clazz.getDeclaredFields();
 
 			prepareSql();
-
-			startTimeMillis = System.currentTimeMillis();
 		}
 	}
 
 	public void rowBatch(final List<T> batchList) throws Exception {
+		long startTimeMillis = System.currentTimeMillis();
 		logger.info("开始批次插入");
 		if (batchList != null && batchList.size() > 0) {
 			jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {

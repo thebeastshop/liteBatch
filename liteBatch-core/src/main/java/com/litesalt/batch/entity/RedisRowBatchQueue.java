@@ -2,6 +2,8 @@ package com.litesalt.batch.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -29,35 +31,37 @@ public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 	private final Logger logger = LoggerFactory.getLogger(RedisRowBatchQueue.class);
 
 	private JedisPool jedisPool;
+	
+	private String key;
 
 	/**
 	 * 生成redis队列key
 	 * 
 	 * @return
 	 */
-	private String buildKey() {
-		return new StringBuilder("ROW_BATCH_QUEUE_").append(clazz.getSimpleName().toUpperCase()).toString();
+	private void buildKey() {
+		key = new StringBuilder("ROW_BATCH_QUEUE_").append(clazz.getSimpleName().toUpperCase()).toString();
 	}
 
 	// ==================================
 	public RedisRowBatchQueue(Class<T> clazz) {
-		this(clazz, DEFAULT_HOST, DEFAULT_PORT);
+		this(clazz, DEFAULT_HOST, DEFAULT_PORT, null);
 	}
 
-	public RedisRowBatchQueue(Class<T> clazz, String host, int port) {
+	public RedisRowBatchQueue(Class<T> clazz, String host, int port, String auth) {
 		super(clazz);
-		this.jedisPool = new JedisPool(new JedisPoolConfig(), host, port, 3000);
+		JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+		jedisPoolConfig.setMaxTotal(100);
+		this.jedisPool = new JedisPool(jedisPoolConfig, host, port, 3000, auth);
+		this.buildKey();
 	}
 
 	@Override
 	public void put(T t) {
-		Jedis jedis = null;
+		Jedis jedis = this.jedisPool.getResource();
 		try {
-			String redisKey = buildKey();
-			jedis = this.jedisPool.getResource();
 			String value = JSONObject.toJSONString(t);
-			this.logger.debug("start: rpush redis. key={}, value={}", redisKey, value);
-			jedis.rpush(redisKey, value);
+			jedis.rpush(key, value);
 		} catch (Exception e) {
 			this.logger.error("Redis exception: {}", e.getMessage(), e);
 		} finally {
@@ -82,12 +86,11 @@ public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 		Jedis jedis = null;
 		try {
 			if (len > 0) {
-				String redisKey = buildKey();
 				jedis = this.jedisPool.getResource();
 				Pipeline pipe = jedis.pipelined();
 				List<Response<String>> responseList = new ArrayList<Response<String>>();
 				while (len > 0) {
-					responseList.add(pipe.lpop(redisKey));
+					responseList.add(pipe.lpop(key));
 					len--;
 				}
 				pipe.sync();
@@ -114,8 +117,7 @@ public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 		Jedis jedis = null;
 		try {
 			jedis = this.jedisPool.getResource();
-			String redisKey = buildKey();
-			Long len = jedis.llen(redisKey);
+			Long len = jedis.llen(key);
 			return take(len != null ? len : 0);
 		} catch (Exception e) {
 			this.logger.error("Redis exception: {}", e.getMessage(), e);

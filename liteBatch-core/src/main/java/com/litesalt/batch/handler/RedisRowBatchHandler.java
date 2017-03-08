@@ -11,8 +11,8 @@ import com.litesalt.batch.entity.RedisRowBatchQueue;
  */
 public class RedisRowBatchHandler<T> extends RowBatchHandler<T> {
 
-	public RedisRowBatchHandler(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, String host, int port) {
+	public RedisRowBatchHandler(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, String host, int port, String auth) {
 		super(jdbcTemplate, submitCapacity, clazz);
-		this.queue = new RedisRowBatchQueue<T>(clazz, host, port);
+		this.queue = new RedisRowBatchQueue<T>(clazz, host, port, auth);
 	}
 }

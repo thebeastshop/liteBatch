@@ -38,9 +38,9 @@ public class RowBatchListenerBuilder {
 	 * @return
 	 */
 	public static <T> RowBatchListener<T> buildRedisRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, String host,
-			int port) {
-		RowBatchListener<T> listener = new RowBatchListener<>();
-		listener.setRowBatchHandler(new RedisRowBatchHandler<>(jdbcTemplate, submitCapacity, clazz, host, port));
+			int port,String auth) {
+		RowBatchListener<T> listener = new RowBatchListener<T>();
+		listener.setRowBatchHandler(new RedisRowBatchHandler<T>(jdbcTemplate, submitCapacity, clazz, host, port,auth));
 		return listener;
 	}
 
