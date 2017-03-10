@@ -1,9 +1,8 @@
 package com.litesalt.batch.entity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -31,7 +30,7 @@ public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 	private final Logger logger = LoggerFactory.getLogger(RedisRowBatchQueue.class);
 
 	private JedisPool jedisPool;
-	
+
 	private String key;
 
 	/**
@@ -58,15 +57,26 @@ public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 
 	@Override
 	public void put(T t) {
-		Jedis jedis = this.jedisPool.getResource();
-		try {
-			String value = JSONObject.toJSONString(t);
-			jedis.rpush(key, value);
-		} catch (Exception e) {
-			this.logger.error("Redis exception: {}", e.getMessage(), e);
-		} finally {
-			if (jedis != null) {
-				jedis.close();
+		put(Arrays.asList(t));
+	}
+
+	@Override
+	public void put(List<T> ts) {
+		if (ts != null && ts.size() > 0) {
+			Jedis jedis = this.jedisPool.getResource();
+			try {
+				Pipeline pipe = jedis.pipelined();
+				for (T t : ts) {
+					String value = JSONObject.toJSONString(t);
+					pipe.rpush(key, value);
+				}
+				pipe.sync();
+			} catch (Exception e) {
+				this.logger.error("Redis exception: {}", e.getMessage(), e);
+			} finally {
+				if (jedis != null) {
+					jedis.close();
+				}
 			}
 		}
 	}

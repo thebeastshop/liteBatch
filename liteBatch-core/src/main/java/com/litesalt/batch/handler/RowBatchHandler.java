@@ -216,11 +216,11 @@ public abstract class RowBatchHandler<T> extends Observable {
 		}
 	}
 
-	public void insertWithBatch(T item) {
+	public void insertWithBatch(List<T> items) {
 		try {
-			if (queue != null) {
-				queue.put(item);
-				loopSize.addAndGet(1);
+			if (queue != null && items != null && items.size() > 0) {
+				queue.put(items);
+				loopSize.addAndGet(items.size());
 				if (loopSize.get() >= submitCapacity) {
 					threadPool.submit(new Thread() {
 						@Override

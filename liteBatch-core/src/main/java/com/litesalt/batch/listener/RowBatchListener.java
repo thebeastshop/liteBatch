@@ -9,7 +9,8 @@
  */
 package com.litesalt.batch.listener;
 
-import java.util.Collection;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -41,13 +42,11 @@ public class RowBatchListener<T> {
 			log.warn("po must not be null!");
 			return;
 		}
-		this.rowBatchHandler.insertWithBatch(t);
+		this.rowBatchHandler.insertWithBatch(Arrays.asList(t));
 	}
 
-	public void insertBatch(Collection<T> coll) {
-		for (T t : coll) {
-			this.rowBatchHandler.insertWithBatch(t);
-		}
+	public void insertBatch(List<T> coll) {
+		this.rowBatchHandler.insertWithBatch(coll);
 	}
 
 	public void aliasTable(String tableName) {

@@ -37,6 +37,15 @@ public class MemoryRowBatchQueue<T> extends RowBatchQueue<T> {
 	}
 
 	@Override
+	public void put(List<T> ts) {
+		if (ts != null && ts.size() > 0) {
+			for (T t : ts) {
+				put(t);
+			}
+		}
+	}
+
+	@Override
 	public T take() {
 		try {
 			return items.take();

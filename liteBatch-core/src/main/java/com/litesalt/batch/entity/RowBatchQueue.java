@@ -24,10 +24,12 @@ public abstract class RowBatchQueue<T> {
 
 	public abstract void put(T t);
 
+	public abstract void put(List<T> ts);
+
 	public abstract T take();
 
 	public abstract List<T> take(long len);
-	
+
 	public abstract List<T> takeAll();
 
 }
