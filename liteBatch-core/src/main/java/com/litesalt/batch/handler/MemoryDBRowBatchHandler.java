@@ -9,9 +9,9 @@ import com.litesalt.batch.entity.MemoryRowBatchQueue;
  * @date 2017年2月27日
  * @description 内存批插处理器
  */
-public class MemoryRowBatchHandler<T> extends RowBatchHandler<T> {
+public class MemoryDBRowBatchHandler<T> extends DBRowBatchHandler<T> {
 
-	public MemoryRowBatchHandler(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz) {
+	public MemoryDBRowBatchHandler(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz) {
 		super(jdbcTemplate, submitCapacity, clazz);
 		this.queue = new MemoryRowBatchQueue<T>();
 	}

@@ -2,10 +2,8 @@ package com.litesalt.batch.entity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import org.apache.log4j.Logger;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author Paul-xiong
@@ -14,9 +12,7 @@ import org.apache.log4j.Logger;
  */
 public class MemoryRowBatchQueue<T> extends RowBatchQueue<T> {
 
-	private final Logger logger = Logger.getLogger(MemoryRowBatchQueue.class);
-
-	private BlockingQueue<T> items;
+	private Queue<T> items;
 
 	public MemoryRowBatchQueue() {
 		this(1024 * 1024);
@@ -24,16 +20,12 @@ public class MemoryRowBatchQueue<T> extends RowBatchQueue<T> {
 
 	public MemoryRowBatchQueue(Integer queueCapacity) {
 		super(null);
-		items = new LinkedBlockingQueue<T>(queueCapacity);
+		items = new ConcurrentLinkedQueue<T>();
 	}
 
 	@Override
 	public void put(T t) {
-		try {
-			items.put(t);
-		} catch (InterruptedException e) {
-			logger.error("put is interrupted", e);
-		}
+		items.add(t);
 	}
 
 	@Override
@@ -47,27 +39,18 @@ public class MemoryRowBatchQueue<T> extends RowBatchQueue<T> {
 
 	@Override
 	public T take() {
-		try {
-			return items.take();
-		} catch (InterruptedException e) {
-			logger.error("take is interrupted", e);
-			return null;
-		}
+		return items.poll();
 	}
 
 	@Override
 	public List<T> take(long len) {
 		List<T> rt = new ArrayList<T>();
-		try {
-			while (len > 0) {
-				T item = items.take();
-				if (item != null) {
-					rt.add(item);
-				}
-				len--;
+		while (len > 0) {
+			T item = take();
+			if (item != null) {
+				rt.add(item);
 			}
-		} catch (InterruptedException e) {
-			logger.error("take is interrupted", e);
+			len--;
 		}
 		return rt;
 	}
