@@ -19,7 +19,7 @@ public class QueueStatusMonitor<T> implements Observer {
 
 	private final Logger log = Logger.getLogger(QueueStatusMonitor.class);
 
-	private final long time = 1800 * 1000; // 定时时间
+	private final long time = 600 * 1000; // 定时时间
 
 	private Date lastBatchTime = new Date();
 
