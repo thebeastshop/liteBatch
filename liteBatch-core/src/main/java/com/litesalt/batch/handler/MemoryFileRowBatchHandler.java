@@ -3,6 +3,7 @@ package com.litesalt.batch.handler;
 import java.io.File;
 
 import com.litesalt.batch.entity.MemoryRowBatchQueue;
+import com.litesalt.batch.enums.FileSavedCapacity;
 
 /**
  * @author Paul-xiong
@@ -11,8 +12,8 @@ import com.litesalt.batch.entity.MemoryRowBatchQueue;
  */
 public class MemoryFileRowBatchHandler<T> extends FileRowBatchHandler<T> {
 
-	public MemoryFileRowBatchHandler(File file, long submitCapacity, Class<T> clazz) {
-		super(file, submitCapacity, clazz);
+	public MemoryFileRowBatchHandler(File file, long submitCapacity, Class<T> clazz, FileSavedCapacity capacity) {
+		super(file, submitCapacity, clazz, capacity);
 		this.queue = new MemoryRowBatchQueue<T>();
 	}
 }

@@ -7,7 +7,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
+
+import com.litesalt.batch.enums.FileSavedCapacity;
 
 /**
  * @author Paul-xiong
@@ -18,9 +22,35 @@ public class FileRowBatchHandler<T> extends RowBatchHandler<T> {
 
 	private File file;
 
-	public FileRowBatchHandler(File file, long submitCapacity, Class<T> clazz) {
+	private String originFilePath;
+
+	private Calendar fileDate = Calendar.getInstance();
+
+	private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+	private FileSavedCapacity capacity = FileSavedCapacity.SINGLE;
+
+	private File getFile() {
+		if (capacity.equals(FileSavedCapacity.DAILY)) {
+			Calendar now = Calendar.getInstance();
+			if (now.get(Calendar.YEAR) > fileDate.get(Calendar.YEAR) || now.get(Calendar.MONTH) > fileDate.get(Calendar.MONTH) || now.get(Calendar.DAY_OF_MONTH) > fileDate.get(Calendar.DAY_OF_MONTH)) {
+				fileDate = now;
+				file = new File(originFilePath + "-" + simpleDateFormat.format(fileDate.getTime()));
+			}
+		}
+		return file;
+	}
+	// -------------------------------------
+
+	public FileRowBatchHandler(File file, long submitCapacity, Class<T> clazz, FileSavedCapacity capacity) {
 		super(submitCapacity, clazz);
-		this.file = file;
+		this.originFilePath = file.getAbsolutePath();
+		if (capacity.equals(FileSavedCapacity.DAILY)) {
+			this.file = new File(originFilePath + "-" + simpleDateFormat.format(fileDate.getTime()));
+		} else {
+			this.file = file;
+		}
+		this.capacity = capacity;
 	}
 
 	@Override
@@ -30,7 +60,7 @@ public class FileRowBatchHandler<T> extends RowBatchHandler<T> {
 			OutputStream os = null;
 			PrintWriter pw = null;
 			try {
-				os = new FileOutputStream(file, true);
+				os = new FileOutputStream(getFile(), true);
 				pw = new PrintWriter(os, true);
 				for (T t : batchList) {
 					if (t != null) {
