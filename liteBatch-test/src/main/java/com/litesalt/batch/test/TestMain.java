@@ -11,7 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.litesalt.batch.RowBatchListenerBuilder;
+import com.litesalt.batch.DBRowBatchListenerBuilder;
 import com.litesalt.batch.listener.RowBatchListener;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -23,7 +23,7 @@ public class TestMain {
 	@Test
 	public void testBatch1() throws Exception {
 		long start = System.currentTimeMillis();
-		RowBatchListener<Person> rowBatchListener = RowBatchListenerBuilder.buildRedisRowBatchListener(jdbcTemplate, 10000, Person.class, "192.168.20.48",
+		RowBatchListener<Person> rowBatchListener = DBRowBatchListenerBuilder.buildRedisRowBatchListener(jdbcTemplate, 10000, Person.class, "192.168.20.48",
 				6379,null);
 		
 //		RowBatchListener<Person> rowBatchListener = RowBatchListenerBuilder.buildMemoryRowBatchListener(jdbcTemplate, 5000, Person.class);
@@ -51,15 +51,8 @@ public class TestMain {
 
 	@Test
 	public void testBatch2() throws Exception {
-		RowBatchListener<PersonVo> rowBatchListener = RowBatchListenerBuilder.buildMemoryRowBatchListener(jdbcTemplate, 1, PersonVo.class);
+		RowBatchListener<PersonVo> rowBatchListener = DBRowBatchListenerBuilder.buildMemoryRowBatchListener(jdbcTemplate, 5000, PersonVo.class);
 		try {
-			rowBatchListener.aliasTable("person");
-			rowBatchListener.aliasField("personName", "name");
-			rowBatchListener.aliasField("personAge", "age");
-			rowBatchListener.aliasField("insertDate", "create_time");
-
-			rowBatchListener.addExcludeField("coName");
-
 			Random random = new Random();
 			PersonVo personVo = null;
 			for (int i = 0; i < 286000; i++) {

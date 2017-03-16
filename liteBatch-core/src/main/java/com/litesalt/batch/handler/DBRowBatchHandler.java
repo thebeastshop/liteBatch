@@ -22,9 +22,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.litesalt.batch.annotation.AliasField;
+import com.litesalt.batch.annotation.AliasTable;
+import com.litesalt.batch.annotation.ExcludeField;
 import com.litesalt.batch.entity.DBColumnMetaData;
 import com.litesalt.batch.util.CamelCaseUtils;
 import com.litesalt.batch.util.Reflections;
@@ -40,24 +44,21 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 
 	private Field[] fields;
 
-	private Map<String, String> aliasMap;
-
 	private Map<String, DBColumnMetaData> metaMap = new HashMap<String, DBColumnMetaData>();
 
 	// ================private==================
 	private void prepareSql() {
-		excludeField.add("id");
-		excludeField.add("serialVersionUID");
 		StringBuffer sql = new StringBuffer();
-		sql.append(" insert into ").append(getAliasTable(clazz.getSimpleName()));
+		sql.append(" insert into ").append(getAliasTable(clazz));
 		sql.append("(");
 		int i = 0;
 		int m = 0;
 		for (Field field : clazz.getDeclaredFields()) {
 			i++;
-			if (!excludeField.contains(field.getName())) {
+			ExcludeField excludeField = field.getAnnotation(ExcludeField.class);
+			if (excludeField == null) {
 				m++;
-				sql.append(getAliasField(field.getName()));
+				sql.append(getAliasField(field));
 				if (i < clazz.getDeclaredFields().length) {
 					sql.append(",");
 				}
@@ -79,7 +80,7 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 		boolean flag = false;
 		try {
 			DatabaseMetaData metaData = jdbcTemplate.getDataSource().getConnection().getMetaData();
-			ResultSet rs = metaData.getColumns(null, "%", getAliasTable(clazz.getSimpleName()), "%");
+			ResultSet rs = metaData.getColumns(null, "%", getAliasTable(clazz), "%");
 			while (rs.next()) {
 				metaMap.put(rs.getString("COLUMN_NAME"), new DBColumnMetaData(rs.getString("COLUMN_NAME"), rs.getInt("DATA_TYPE"), rs.getObject("COLUMN_DEF")));
 			}
@@ -91,19 +92,21 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 		return flag;
 	}
 
-	private String getAliasTable(String poName) {
-		if (aliasMap != null && aliasMap.containsKey("TABLE")) {
-			return aliasMap.get("TABLE");
+	private String getAliasTable(Class<T> clazz) {
+		AliasTable aliasTable = clazz.getAnnotation(AliasTable.class);
+		if (aliasTable != null && StringUtils.isNotBlank(aliasTable.value())) {
+			return aliasTable.value();
 		} else {
-			return CamelCaseUtils.toUnderScoreCase(poName);
+			return CamelCaseUtils.toUnderScoreCase(clazz.getSimpleName());
 		}
 	}
 
-	private String getAliasField(String fieldName) {
-		if (aliasMap != null && aliasMap.containsKey(fieldName)) {
-			return aliasMap.get(fieldName);
+	private String getAliasField(Field field) {
+		AliasField aliasField = field.getAnnotation(AliasField.class);
+		if (aliasField != null && StringUtils.isNotBlank(aliasField.value())) {
+			return aliasField.value();
 		} else {
-			return CamelCaseUtils.toUnderScoreCase(fieldName);
+			return CamelCaseUtils.toUnderScoreCase(field.getName());
 		}
 	}
 
@@ -133,10 +136,11 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 					DBColumnMetaData metaData = null;
 					int n = 0;
 					for (Field field : fields) {
-						if (!excludeField.contains(field.getName())) {
+						ExcludeField excludeField = field.getAnnotation(ExcludeField.class);
+						if (excludeField == null) {
 							n++;
 							o = Reflections.invokeGetter(t, field.getName());
-							metaData = metaMap.get(getAliasField(field.getName()));
+							metaData = metaMap.get(getAliasField(field));
 
 							// 如果值为null，还要看默认值，如果有默认值，取元数据中的默认值
 							if (o == null) {
@@ -189,28 +193,6 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 			});
 			logger.info("this batch spend " + (System.currentTimeMillis() - startTimeMillis) + " millisecond");
 		}
-	}
-
-	@Override
-	public void aliasTable(String tableName) {
-		if (aliasMap == null) {
-			aliasMap = new HashMap<String, String>();
-		}
-		aliasMap.put("TABLE", tableName);
-		// 改变表名后要重新加载数据库元信息和准备插入sql
-		if (initDBMetaData()) {
-			prepareSql();
-		}
-	}
-
-	@Override
-	public void aliasField(String fieldName, String columnName) {
-		if (aliasMap == null) {
-			aliasMap = new HashMap<String, String>();
-		}
-		aliasMap.put(fieldName, columnName);
-		// 改变字段名后要重新生成sql
-		prepareSql();
 	}
 
 }

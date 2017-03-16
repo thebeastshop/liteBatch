@@ -48,16 +48,4 @@ public class RowBatchListener<T> {
 	public void insertBatch(List<T> coll) {
 		this.rowBatchHandler.insertWithBatch(coll);
 	}
-
-	public void aliasTable(String tableName) {
-		this.rowBatchHandler.aliasTable(tableName);
-	}
-
-	public void aliasField(String fieldName, String columnName) {
-		this.rowBatchHandler.aliasField(fieldName, columnName);
-	}
-
-	public void addExcludeField(String fieldName) {
-		this.rowBatchHandler.addExcludeField(fieldName);
-	}
 }

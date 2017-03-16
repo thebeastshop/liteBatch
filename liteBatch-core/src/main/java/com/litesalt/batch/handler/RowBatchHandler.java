@@ -9,7 +9,6 @@
  */
 package com.litesalt.batch.handler;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 import java.util.concurrent.ExecutorService;
@@ -35,8 +34,6 @@ public abstract class RowBatchHandler<T> extends Observable {
 	protected long submitCapacity;
 
 	protected Class<T> clazz;
-
-	protected List<String> excludeField = new ArrayList<String>();
 
 	private ExecutorService threadPool = Executors.newFixedThreadPool(10);
 
@@ -104,14 +101,6 @@ public abstract class RowBatchHandler<T> extends Observable {
 			logger.error("take is interrupted", e);
 			return null;
 		}
-	}
-
-	public abstract void aliasTable(String tableName);
-
-	public abstract void aliasField(String fieldName, String columnName);
-
-	public void addExcludeField(String fieldName) {
-		excludeField.add(fieldName);
 	}
 
 	public Class<T> getClazz() {

@@ -11,10 +11,19 @@ package com.litesalt.batch.test;
 
 import java.util.Date;
 
+import com.litesalt.batch.annotation.AliasField;
+import com.litesalt.batch.annotation.AliasTable;
+import com.litesalt.batch.annotation.ExcludeField;
+
+@AliasTable("person")
 public class PersonVo {
+	@AliasField("name")
 	private String personName;
+	@AliasField("age")
 	private Integer personAge;
+	@ExcludeField
 	private String coName;
+	@AliasField("create_time")
 	private Date insertDate;
 	public String getPersonName() {
 		return personName;

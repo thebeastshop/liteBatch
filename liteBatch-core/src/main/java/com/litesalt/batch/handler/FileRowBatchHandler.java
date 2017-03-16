@@ -50,16 +50,4 @@ public class FileRowBatchHandler<T> extends RowBatchHandler<T> {
 		}
 	}
 
-	@Override
-	public void aliasTable(String tableName) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void aliasField(String fieldName, String columnName) {
-		// TODO Auto-generated method stub
-
-	}
-
 }
