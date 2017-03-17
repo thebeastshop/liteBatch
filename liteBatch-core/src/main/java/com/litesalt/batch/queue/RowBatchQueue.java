@@ -2,6 +2,8 @@ package com.litesalt.batch.queue;
 
 import java.util.List;
 
+import com.litesalt.batch.context.QueueContext;
+
 /**
  * @author Paul-xiong
  * @date 2017年2月26日
@@ -11,15 +13,16 @@ public abstract class RowBatchQueue<T> {
 
 	protected Class<T> clazz;
 
+	protected QueueContext context;
+
 	public RowBatchQueue() {
-		super();
+		this(null, null);
 	}
 
-	public RowBatchQueue(Class<T> clazz) {
+	public RowBatchQueue(Class<T> clazz, QueueContext context) {
 		super();
-		if (clazz != null) {
-			this.clazz = clazz;
-		}
+		this.clazz = clazz;
+		this.context = context;
 	}
 
 	public abstract void put(T t);

@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
+import com.litesalt.batch.context.QueueContext;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -39,7 +40,16 @@ public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 	 * @return
 	 */
 	private void buildKey() {
-		key = new StringBuilder("ROW_BATCH_QUEUE_").append(clazz.getSimpleName().toUpperCase()).toString();
+		StringBuilder stringBuilder = new StringBuilder("ROW_BATCH_QUEUE_").append(clazz.getSimpleName().toUpperCase());
+		if (context != null) {
+			if (context.getType() != null) {
+				stringBuilder.append("_").append(context.getType().toString().toUpperCase());
+			}
+			if (StringUtils.isNotBlank(context.getRedisKeyExt())) {
+				stringBuilder.append("_").append(context.getRedisKeyExt().toUpperCase());
+			}
+		}
+		key = stringBuilder.toString();
 	}
 
 	// ==================================
@@ -48,7 +58,11 @@ public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 	}
 
 	public RedisRowBatchQueue(Class<T> clazz, String host, int port, String auth) {
-		super(clazz);
+		this(clazz, new QueueContext(), host, port, auth);
+	}
+
+	public RedisRowBatchQueue(Class<T> clazz, QueueContext context, String host, int port, String auth) {
+		super(clazz, context);
 		JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
 		jedisPoolConfig.setMaxTotal(100);
 		this.jedisPool = new JedisPool(jedisPoolConfig, host, port, 3000, auth);

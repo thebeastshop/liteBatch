@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.litesalt.batch.context.QueueContext;
+
 /**
  * @author Paul-xiong
  * @date 2017年2月26日
@@ -15,11 +17,11 @@ public class MemoryRowBatchQueue<T> extends RowBatchQueue<T> {
 	private Queue<T> items;
 
 	public MemoryRowBatchQueue() {
-		this(1024 * 1024);
+		this(new QueueContext());
 	}
 
-	public MemoryRowBatchQueue(Integer queueCapacity) {
-		super(null);
+	public MemoryRowBatchQueue(QueueContext context) {
+		super(null, context);
 		items = new ConcurrentLinkedQueue<T>();
 	}
 
