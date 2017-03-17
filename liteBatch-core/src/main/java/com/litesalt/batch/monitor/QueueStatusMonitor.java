@@ -1,4 +1,4 @@
-package com.litesalt.batch;
+package com.litesalt.batch.monitor;
 
 import java.util.Date;
 import java.util.Observable;

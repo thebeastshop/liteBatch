@@ -17,8 +17,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.log4j.Logger;
 
-import com.litesalt.batch.QueueStatusMonitor;
 import com.litesalt.batch.entity.RowBatchQueue;
+import com.litesalt.batch.monitor.QueueStatusMonitor;
 
 /**
  * 批插处理器
