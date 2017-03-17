@@ -52,19 +52,16 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 		StringBuffer sql = new StringBuffer();
 		sql.append(" insert into ").append(getAliasTable(clazz));
 		sql.append("(");
-		int i = 0;
 		int m = 0;
 		for (Field field : clazz.getDeclaredFields()) {
-			i++;
 			ExcludeField excludeField = field.getAnnotation(ExcludeField.class);
 			if (excludeField == null) {
 				m++;
 				sql.append(getAliasField(field));
-				if (i < clazz.getDeclaredFields().length) {
-					sql.append(",");
-				}
+				sql.append(",");
 			}
 		}
+		sql = sql.replace(sql.length() - 1, sql.length(), "");
 		sql.append(") values(");
 		for (int n = 0; n < m; n++) {
 			sql.append("?");
