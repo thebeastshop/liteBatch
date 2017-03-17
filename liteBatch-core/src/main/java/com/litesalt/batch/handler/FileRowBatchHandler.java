@@ -11,8 +11,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
-import com.litesalt.batch.entity.RowBatchQueue;
 import com.litesalt.batch.enums.FileSavedCapacity;
+import com.litesalt.batch.queue.RowBatchQueue;
 
 /**
  * @author Paul-xiong

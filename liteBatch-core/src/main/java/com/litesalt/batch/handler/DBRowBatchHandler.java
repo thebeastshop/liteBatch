@@ -30,7 +30,7 @@ import com.litesalt.batch.annotation.AliasField;
 import com.litesalt.batch.annotation.AliasTable;
 import com.litesalt.batch.annotation.ExcludeField;
 import com.litesalt.batch.entity.DBColumnMetaData;
-import com.litesalt.batch.entity.RowBatchQueue;
+import com.litesalt.batch.queue.RowBatchQueue;
 import com.litesalt.batch.util.CamelCaseUtils;
 import com.litesalt.batch.util.Reflections;
 

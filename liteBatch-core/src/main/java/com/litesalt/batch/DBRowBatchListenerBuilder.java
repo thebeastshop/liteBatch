@@ -2,10 +2,10 @@ package com.litesalt.batch;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.litesalt.batch.entity.MemoryRowBatchQueue;
-import com.litesalt.batch.entity.RedisRowBatchQueue;
 import com.litesalt.batch.handler.DBRowBatchHandler;
 import com.litesalt.batch.listener.RowBatchListener;
+import com.litesalt.batch.queue.MemoryRowBatchQueue;
+import com.litesalt.batch.queue.RedisRowBatchQueue;
 
 /**
  * @author Paul-xiong

@@ -2,11 +2,11 @@ package com.litesalt.batch;
 
 import java.io.File;
 
-import com.litesalt.batch.entity.MemoryRowBatchQueue;
-import com.litesalt.batch.entity.RedisRowBatchQueue;
 import com.litesalt.batch.enums.FileSavedCapacity;
 import com.litesalt.batch.handler.FileRowBatchHandler;
 import com.litesalt.batch.listener.RowBatchListener;
+import com.litesalt.batch.queue.MemoryRowBatchQueue;
+import com.litesalt.batch.queue.RedisRowBatchQueue;
 
 /**
  * @author Paul-xiong

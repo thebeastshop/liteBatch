@@ -1,4 +1,4 @@
-package com.litesalt.batch.entity;
+package com.litesalt.batch.queue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
