@@ -25,15 +25,8 @@ public class RowBatchListener<T> {
 
 	private RowBatchHandler<T> rowBatchHandler;
 
-	public RowBatchListener() {
+	public RowBatchListener(RowBatchHandler<T> rowBatchHandler) {
 		log.info("开始监听批次插入");
-	}
-
-	public RowBatchHandler<T> getRowBatchHandler() {
-		return rowBatchHandler;
-	}
-
-	public void setRowBatchHandler(RowBatchHandler<T> rowBatchHandler) {
 		this.rowBatchHandler = rowBatchHandler;
 	}
 

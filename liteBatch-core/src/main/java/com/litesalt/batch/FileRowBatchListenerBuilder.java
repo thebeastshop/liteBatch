@@ -2,9 +2,10 @@ package com.litesalt.batch;
 
 import java.io.File;
 
+import com.litesalt.batch.entity.MemoryRowBatchQueue;
+import com.litesalt.batch.entity.RedisRowBatchQueue;
 import com.litesalt.batch.enums.FileSavedCapacity;
-import com.litesalt.batch.handler.MemoryFileRowBatchHandler;
-import com.litesalt.batch.handler.RedisFileRowBatchHandler;
+import com.litesalt.batch.handler.FileRowBatchHandler;
 import com.litesalt.batch.listener.RowBatchListener;
 
 /**
@@ -24,8 +25,9 @@ public class FileRowBatchListenerBuilder {
 	 * @return
 	 */
 	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(File file, long submitCapacity, Class<T> clazz, FileSavedCapacity capacity) {
-		RowBatchListener<T> listener = new RowBatchListener<>();
-		listener.setRowBatchHandler(new MemoryFileRowBatchHandler<>(file, submitCapacity, clazz, capacity));
+		MemoryRowBatchQueue<T> queue = new MemoryRowBatchQueue<T>();
+		FileRowBatchHandler<T> rowBatchHandler = new FileRowBatchHandler<>(file, queue, submitCapacity, clazz, capacity);
+		RowBatchListener<T> listener = new RowBatchListener<>(rowBatchHandler);
 		return listener;
 	}
 
@@ -40,8 +42,9 @@ public class FileRowBatchListenerBuilder {
 	 * @return
 	 */
 	public static <T> RowBatchListener<T> buildRedisRowBatchListener(File file, long submitCapacity, Class<T> clazz, FileSavedCapacity capacity, String host, int port, String auth) {
-		RowBatchListener<T> listener = new RowBatchListener<T>();
-		listener.setRowBatchHandler(new RedisFileRowBatchHandler<T>(file, submitCapacity, clazz, capacity, host, port, auth));
+		RedisRowBatchQueue<T> queue = new RedisRowBatchQueue<T>(clazz, host, port, auth);
+		FileRowBatchHandler<T> rowBatchHandler = new FileRowBatchHandler<T>(file,queue, submitCapacity, clazz, capacity);
+		RowBatchListener<T> listener = new RowBatchListener<T>(rowBatchHandler);
 		return listener;
 	}
 

@@ -2,8 +2,9 @@ package com.litesalt.batch;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.litesalt.batch.handler.MemoryDBRowBatchHandler;
-import com.litesalt.batch.handler.RedisDBRowBatchHandler;
+import com.litesalt.batch.entity.MemoryRowBatchQueue;
+import com.litesalt.batch.entity.RedisRowBatchQueue;
+import com.litesalt.batch.handler.DBRowBatchHandler;
 import com.litesalt.batch.listener.RowBatchListener;
 
 /**
@@ -22,8 +23,9 @@ public class DBRowBatchListenerBuilder {
 	 * @return
 	 */
 	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz) {
-		RowBatchListener<T> listener = new RowBatchListener<>();
-		listener.setRowBatchHandler(new MemoryDBRowBatchHandler<>(jdbcTemplate, submitCapacity, clazz));
+		MemoryRowBatchQueue<T> queue = new MemoryRowBatchQueue<T>();
+		DBRowBatchHandler<T> rowBatchHandler = new DBRowBatchHandler<>(jdbcTemplate, queue, submitCapacity, clazz);
+		RowBatchListener<T> listener = new RowBatchListener<>(rowBatchHandler);
 		return listener;
 	}
 
@@ -37,10 +39,10 @@ public class DBRowBatchListenerBuilder {
 	 * @param port
 	 * @return
 	 */
-	public static <T> RowBatchListener<T> buildRedisRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, String host,
-			int port,String auth) {
-		RowBatchListener<T> listener = new RowBatchListener<T>();
-		listener.setRowBatchHandler(new RedisDBRowBatchHandler<T>(jdbcTemplate, submitCapacity, clazz, host, port,auth));
+	public static <T> RowBatchListener<T> buildRedisRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, String host, int port, String auth) {
+		RedisRowBatchQueue<T> queue = new RedisRowBatchQueue<T>(clazz, host, port, auth);
+		DBRowBatchHandler<T> rowBatchHandler = new DBRowBatchHandler<T>(jdbcTemplate, queue, submitCapacity, clazz);
+		RowBatchListener<T> listener = new RowBatchListener<T>(rowBatchHandler);
 		return listener;
 	}
 

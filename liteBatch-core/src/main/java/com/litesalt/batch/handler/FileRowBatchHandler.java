@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
+import com.litesalt.batch.entity.RowBatchQueue;
 import com.litesalt.batch.enums.FileSavedCapacity;
 
 /**
@@ -42,8 +43,8 @@ public class FileRowBatchHandler<T> extends RowBatchHandler<T> {
 	}
 	// -------------------------------------
 
-	public FileRowBatchHandler(File file, long submitCapacity, Class<T> clazz, FileSavedCapacity capacity) {
-		super(submitCapacity, clazz);
+	public FileRowBatchHandler(File file, RowBatchQueue<T> queue, long submitCapacity, Class<T> clazz, FileSavedCapacity capacity) {
+		super(queue, submitCapacity, clazz);
 		this.originFilePath = file.getAbsolutePath();
 		if (capacity.equals(FileSavedCapacity.DAILY)) {
 			this.file = new File(originFilePath + "-" + simpleDateFormat.format(fileDate.getTime()));

@@ -39,11 +39,12 @@ public abstract class RowBatchHandler<T> extends Observable {
 
 	// ========================================
 
-	public RowBatchHandler(long submitCapacity, Class<T> clazz) {
+	public RowBatchHandler(RowBatchQueue<T> queue, long submitCapacity, Class<T> clazz) {
 		super();
 		// ======添加观察者=====
 		this.addObserver(new QueueStatusMonitor<T>(this));
 		// ===================
+		this.queue = queue;
 		this.clazz = clazz;
 		this.submitCapacity = submitCapacity;
 	}

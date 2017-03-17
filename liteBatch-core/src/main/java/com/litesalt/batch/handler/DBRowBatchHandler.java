@@ -30,6 +30,7 @@ import com.litesalt.batch.annotation.AliasField;
 import com.litesalt.batch.annotation.AliasTable;
 import com.litesalt.batch.annotation.ExcludeField;
 import com.litesalt.batch.entity.DBColumnMetaData;
+import com.litesalt.batch.entity.RowBatchQueue;
 import com.litesalt.batch.util.CamelCaseUtils;
 import com.litesalt.batch.util.Reflections;
 
@@ -112,8 +113,8 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 
 	// ========================================
 
-	public DBRowBatchHandler(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz) {
-		super(submitCapacity, clazz);
+	public DBRowBatchHandler(JdbcTemplate jdbcTemplate, RowBatchQueue<T> queue, long submitCapacity, Class<T> clazz) {
+		super(queue, submitCapacity, clazz);
 		this.jdbcTemplate = jdbcTemplate;
 
 		if (initDBMetaData()) {
