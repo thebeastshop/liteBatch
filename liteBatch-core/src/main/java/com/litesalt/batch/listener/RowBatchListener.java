@@ -41,4 +41,8 @@ public class RowBatchListener<T> {
 	public void insertBatch(List<T> coll) {
 		this.rowBatchHandler.insertWithBatch(coll);
 	}
+
+	public void flush() {
+		this.rowBatchHandler.flush();
+	}
 }

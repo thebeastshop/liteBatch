@@ -39,7 +39,7 @@ public class QueueStatusMonitor<T> implements Observer {
 						Date now = new Date();
 						if (now.getTime() - lastBatchTime.getTime() > time) {
 							log.info("队列健康状态监视器开始工作");
-							handler.rowBatch(handler.takeAll());
+							handler.flush();
 						}
 					}
 				} catch (Exception e) {

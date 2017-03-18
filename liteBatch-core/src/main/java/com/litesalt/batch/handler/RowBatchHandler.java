@@ -78,6 +78,10 @@ public abstract class RowBatchHandler<T> extends Observable {
 		}
 	}
 
+	public void flush() {
+		rowBatch(takeAll());
+	}
+
 	public List<T> take(long len) {
 		try {
 			if (queue != null) {
