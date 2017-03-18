@@ -151,17 +151,13 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 
 							switch (metaData.getDataType()) {
 							case Types.CHAR:
+							case Types.VARCHAR:
+							case Types.NVARCHAR:
 								ps.setString(n, (String) o);
 								break;
 							case Types.BLOB:
 							case Types.LONGVARBINARY:
 								ps.setBytes(n, (byte[]) o);
-								break;
-							case Types.VARCHAR:
-								ps.setString(n, (String) o);
-								break;
-							case Types.NVARCHAR:
-								ps.setString(n, (String) o);
 								break;
 							case Types.TINYINT:
 							case Types.SMALLINT:
@@ -172,6 +168,9 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 								break;
 							case Types.BIGINT:
 								ps.setLong(n, Long.parseLong(o.toString()));
+								break;
+							case Types.DATE:
+								ps.setDate(n, new java.sql.Date(((Date) o).getTime()));
 								break;
 							case Types.TIMESTAMP:
 								ps.setTimestamp(n, new Timestamp(((Date) o).getTime()));
@@ -186,7 +185,7 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 
 				@Override
 				public int getBatchSize() {
-					return batchList.size();
+					return batchList != null ? batchList.size() : 0;
 				}
 			});
 			logger.info("this batch spend " + (System.currentTimeMillis() - startTimeMillis) + " millisecond");
