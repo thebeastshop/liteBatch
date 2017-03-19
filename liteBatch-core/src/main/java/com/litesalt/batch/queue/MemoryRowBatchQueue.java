@@ -17,11 +17,11 @@ public class MemoryRowBatchQueue<T> extends RowBatchQueue<T> {
 	private Queue<T> items;
 
 	public MemoryRowBatchQueue() {
-		this(new QueueContext());
+		this(new QueueContext<T>());
 	}
 
-	public MemoryRowBatchQueue(QueueContext context) {
-		super(null, context);
+	public MemoryRowBatchQueue(QueueContext<T> context) {
+		super(context);
 		items = new ConcurrentLinkedQueue<T>();
 	}
 

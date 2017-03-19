@@ -11,17 +11,14 @@ import com.litesalt.batch.context.QueueContext;
  */
 public abstract class RowBatchQueue<T> {
 
-	protected Class<T> clazz;
-
-	protected QueueContext context;
+	protected QueueContext<T> context;
 
 	public RowBatchQueue() {
-		this(null, null);
+		this(new QueueContext<T>());
 	}
 
-	public RowBatchQueue(Class<T> clazz, QueueContext context) {
+	public RowBatchQueue(QueueContext<T> context) {
 		super();
-		this.clazz = clazz;
 		this.context = context;
 	}
 

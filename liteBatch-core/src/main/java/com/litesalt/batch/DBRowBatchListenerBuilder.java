@@ -3,6 +3,8 @@ package com.litesalt.batch;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.litesalt.batch.context.HandlerContext;
+import com.litesalt.batch.context.QueueContext;
+import com.litesalt.batch.enums.TargetType;
 import com.litesalt.batch.handler.DBRowBatchHandler;
 import com.litesalt.batch.listener.RowBatchListener;
 import com.litesalt.batch.queue.MemoryRowBatchQueue;
@@ -42,7 +44,8 @@ public class DBRowBatchListenerBuilder {
 	 * @return
 	 */
 	public static <T> RowBatchListener<T> buildRedisRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, String host, int port, String auth) {
-		RedisRowBatchQueue<T> queue = new RedisRowBatchQueue<T>(clazz, host, port, auth);
+		QueueContext<T> qContext = new QueueContext<T>(TargetType.DB, clazz);
+		RedisRowBatchQueue<T> queue = new RedisRowBatchQueue<T>(qContext, host, port, auth);
 		HandlerContext<T> context = new HandlerContext<>(queue, submitCapacity, clazz);
 		DBRowBatchHandler<T> rowBatchHandler = new DBRowBatchHandler<T>(context, jdbcTemplate);
 		RowBatchListener<T> listener = new RowBatchListener<T>(rowBatchHandler);

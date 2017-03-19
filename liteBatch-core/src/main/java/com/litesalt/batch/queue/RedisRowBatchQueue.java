@@ -40,6 +40,7 @@ public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 	 * @return
 	 */
 	private void buildKey() {
+		Class<T> clazz = context.getClazz();
 		StringBuilder stringBuilder = new StringBuilder("ROW_BATCH_QUEUE_").append(clazz.getSimpleName().toUpperCase());
 		if (context != null) {
 			if (context.getType() != null) {
@@ -53,16 +54,16 @@ public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 	}
 
 	// ==================================
-	public RedisRowBatchQueue(Class<T> clazz) {
-		this(clazz, DEFAULT_HOST, DEFAULT_PORT, null);
+	public RedisRowBatchQueue() {
+		this(DEFAULT_HOST, DEFAULT_PORT, null);
 	}
 
-	public RedisRowBatchQueue(Class<T> clazz, String host, int port, String auth) {
-		this(clazz, new QueueContext(), host, port, auth);
+	public RedisRowBatchQueue(String host, int port, String auth) {
+		this(new QueueContext<T>(), host, port, auth);
 	}
 
-	public RedisRowBatchQueue(Class<T> clazz, QueueContext context, String host, int port, String auth) {
-		super(clazz, context);
+	public RedisRowBatchQueue(QueueContext<T> context, String host, int port, String auth) {
+		super(context);
 		JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
 		jedisPoolConfig.setMaxTotal(100);
 		this.jedisPool = new JedisPool(jedisPoolConfig, host, port, 3000, auth);
@@ -122,7 +123,7 @@ public class RedisRowBatchQueue<T> extends RowBatchQueue<T> {
 				for (Response<String> response : responseList) {
 					item = response.get();
 					if (StringUtils.isNotBlank(item)) {
-						rt.add(JSONObject.parseObject(item, clazz));
+						rt.add(JSONObject.parseObject(item, context.getClazz()));
 					}
 				}
 			}

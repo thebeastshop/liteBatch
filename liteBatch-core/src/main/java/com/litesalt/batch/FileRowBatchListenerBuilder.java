@@ -28,7 +28,7 @@ public class FileRowBatchListenerBuilder {
 	 * @return
 	 */
 	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(File file, long submitCapacity, Class<T> clazz, FileSavedCapacity capacity) {
-		QueueContext qContext = new QueueContext(TargetType.FILE);
+		QueueContext<T> qContext = new QueueContext<T>(TargetType.FILE);
 		MemoryRowBatchQueue<T> queue = new MemoryRowBatchQueue<T>(qContext);
 		HandlerContext<T> hContext = new HandlerContext<>(queue, submitCapacity, clazz);
 		FileRowBatchHandler<T> rowBatchHandler = new FileRowBatchHandler<>(hContext, file, capacity);
@@ -47,8 +47,8 @@ public class FileRowBatchListenerBuilder {
 	 * @return
 	 */
 	public static <T> RowBatchListener<T> buildRedisRowBatchListener(File file, long submitCapacity, Class<T> clazz, FileSavedCapacity capacity, String host, int port, String auth) {
-		QueueContext qContext = new QueueContext(TargetType.FILE, file.getName());
-		RedisRowBatchQueue<T> queue = new RedisRowBatchQueue<T>(clazz, qContext, host, port, auth);
+		QueueContext<T> qContext = new QueueContext<T>(TargetType.FILE, clazz, file.getName());
+		RedisRowBatchQueue<T> queue = new RedisRowBatchQueue<T>(qContext, host, port, auth);
 		HandlerContext<T> hContext = new HandlerContext<>(queue, submitCapacity, clazz);
 		FileRowBatchHandler<T> rowBatchHandler = new FileRowBatchHandler<T>(hContext, file, capacity);
 		RowBatchListener<T> listener = new RowBatchListener<T>(rowBatchHandler);
