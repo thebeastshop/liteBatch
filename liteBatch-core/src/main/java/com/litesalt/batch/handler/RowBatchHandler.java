@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.log4j.Logger;
 
+import com.litesalt.batch.context.HandlerContext;
 import com.litesalt.batch.monitor.QueueStatusMonitor;
 import com.litesalt.batch.queue.RowBatchQueue;
 
@@ -39,14 +40,14 @@ public abstract class RowBatchHandler<T> extends Observable {
 
 	// ========================================
 
-	public RowBatchHandler(RowBatchQueue<T> queue, long submitCapacity, Class<T> clazz) {
+	public RowBatchHandler(HandlerContext<T> context) {
 		super();
 		// ======添加观察者=====
 		this.addObserver(new QueueStatusMonitor<T>(this));
 		// ===================
-		this.queue = queue;
-		this.clazz = clazz;
-		this.submitCapacity = submitCapacity;
+		this.queue = context.getQueue();
+		this.clazz = context.getClazz();
+		this.submitCapacity = context.getSubmitCapacity();
 	}
 
 	public abstract void rowBatch(final List<T> batchList);

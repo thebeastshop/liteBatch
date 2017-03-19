@@ -2,6 +2,7 @@ package com.litesalt.batch;
 
 import java.io.File;
 
+import com.litesalt.batch.context.HandlerContext;
 import com.litesalt.batch.context.QueueContext;
 import com.litesalt.batch.enums.FileSavedCapacity;
 import com.litesalt.batch.enums.TargetType;
@@ -27,9 +28,10 @@ public class FileRowBatchListenerBuilder {
 	 * @return
 	 */
 	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(File file, long submitCapacity, Class<T> clazz, FileSavedCapacity capacity) {
-		QueueContext context = new QueueContext(TargetType.FILE);
-		MemoryRowBatchQueue<T> queue = new MemoryRowBatchQueue<T>(context);
-		FileRowBatchHandler<T> rowBatchHandler = new FileRowBatchHandler<>(file, queue, submitCapacity, clazz, capacity);
+		QueueContext qContext = new QueueContext(TargetType.FILE);
+		MemoryRowBatchQueue<T> queue = new MemoryRowBatchQueue<T>(qContext);
+		HandlerContext<T> hContext = new HandlerContext<>(queue, submitCapacity, clazz);
+		FileRowBatchHandler<T> rowBatchHandler = new FileRowBatchHandler<>(hContext, file, capacity);
 		RowBatchListener<T> listener = new RowBatchListener<>(rowBatchHandler);
 		return listener;
 	}
@@ -45,9 +47,10 @@ public class FileRowBatchListenerBuilder {
 	 * @return
 	 */
 	public static <T> RowBatchListener<T> buildRedisRowBatchListener(File file, long submitCapacity, Class<T> clazz, FileSavedCapacity capacity, String host, int port, String auth) {
-		QueueContext context = new QueueContext(TargetType.FILE, file.getName());
-		RedisRowBatchQueue<T> queue = new RedisRowBatchQueue<T>(clazz, context, host, port, auth);
-		FileRowBatchHandler<T> rowBatchHandler = new FileRowBatchHandler<T>(file, queue, submitCapacity, clazz, capacity);
+		QueueContext qContext = new QueueContext(TargetType.FILE, file.getName());
+		RedisRowBatchQueue<T> queue = new RedisRowBatchQueue<T>(clazz, qContext, host, port, auth);
+		HandlerContext<T> hContext = new HandlerContext<>(queue, submitCapacity, clazz);
+		FileRowBatchHandler<T> rowBatchHandler = new FileRowBatchHandler<T>(hContext, file, capacity);
 		RowBatchListener<T> listener = new RowBatchListener<T>(rowBatchHandler);
 		return listener;
 	}

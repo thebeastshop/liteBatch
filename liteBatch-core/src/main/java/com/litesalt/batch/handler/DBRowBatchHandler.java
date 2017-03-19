@@ -29,8 +29,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import com.litesalt.batch.annotation.AliasField;
 import com.litesalt.batch.annotation.AliasTable;
 import com.litesalt.batch.annotation.ExcludeField;
+import com.litesalt.batch.context.HandlerContext;
 import com.litesalt.batch.entity.DBColumnMetaData;
-import com.litesalt.batch.queue.RowBatchQueue;
 import com.litesalt.batch.util.CamelCaseUtils;
 import com.litesalt.batch.util.Reflections;
 
@@ -110,8 +110,8 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 
 	// ========================================
 
-	public DBRowBatchHandler(JdbcTemplate jdbcTemplate, RowBatchQueue<T> queue, long submitCapacity, Class<T> clazz) {
-		super(queue, submitCapacity, clazz);
+	public DBRowBatchHandler(HandlerContext<T> context, JdbcTemplate jdbcTemplate) {
+		super(context);
 		this.jdbcTemplate = jdbcTemplate;
 
 		if (initDBMetaData()) {
