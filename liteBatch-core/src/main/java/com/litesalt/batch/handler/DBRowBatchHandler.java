@@ -50,6 +50,7 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 	// ================private==================
 	private void prepareSql() {
 		StringBuffer sql = new StringBuffer();
+		Class<T> clazz = context.getClazz();
 		sql.append(" insert into ").append(getAliasTable(clazz));
 		sql.append("(");
 		int m = 0;
@@ -77,6 +78,7 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 	private boolean initDBMetaData() {
 		boolean flag = false;
 		try {
+			Class<T> clazz = context.getClazz();
 			DatabaseMetaData metaData = jdbcTemplate.getDataSource().getConnection().getMetaData();
 			ResultSet rs = metaData.getColumns(null, "%", getAliasTable(clazz), "%");
 			while (rs.next()) {
@@ -115,6 +117,7 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 		this.jdbcTemplate = jdbcTemplate;
 
 		if (initDBMetaData()) {
+			Class<T> clazz = context.getClazz();
 			fields = clazz.getDeclaredFields();
 
 			prepareSql();

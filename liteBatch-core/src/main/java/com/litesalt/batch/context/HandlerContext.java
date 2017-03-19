@@ -14,7 +14,6 @@ public class HandlerContext<T> {
 	 * 默认提交数量
 	 */
 	private final static long DEFAULT_SUBMIT_CAPACITY = 5000;
-
 	/**
 	 * 缓存队列
 	 */
@@ -27,6 +26,10 @@ public class HandlerContext<T> {
 	 * 操作的泛型类
 	 */
 	private Class<T> clazz;
+	/**
+	 * 是否同步批插
+	 */
+	private boolean syn;
 
 	public HandlerContext() {
 		this(new MemoryRowBatchQueue<T>(), null);
@@ -37,10 +40,15 @@ public class HandlerContext<T> {
 	}
 
 	public HandlerContext(RowBatchQueue<T> queue, long submitCapacity, Class<T> clazz) {
+		this(queue, submitCapacity, clazz, false);
+	}
+
+	public HandlerContext(RowBatchQueue<T> queue, long submitCapacity, Class<T> clazz, boolean syn) {
 		super();
 		this.queue = queue;
 		this.submitCapacity = submitCapacity;
 		this.clazz = clazz;
+		this.syn = syn;
 	}
 
 	public RowBatchQueue<T> getQueue() {
@@ -65,6 +73,14 @@ public class HandlerContext<T> {
 
 	public void setClazz(Class<T> clazz) {
 		this.clazz = clazz;
+	}
+
+	public boolean isSyn() {
+		return syn;
+	}
+
+	public void setSyn(boolean syn) {
+		this.syn = syn;
 	}
 
 }

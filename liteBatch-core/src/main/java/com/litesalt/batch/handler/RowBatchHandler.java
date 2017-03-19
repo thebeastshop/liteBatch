@@ -28,13 +28,9 @@ public abstract class RowBatchHandler<T> extends Observable {
 
 	protected final Logger logger = Logger.getLogger(RowBatchHandler.class);
 
-	protected RowBatchQueue<T> queue;
-
 	protected AtomicLong loopSize = new AtomicLong(0);
 
-	protected long submitCapacity;
-
-	protected Class<T> clazz;
+	protected HandlerContext<T> context;
 
 	private ExecutorService threadPool = Executors.newFixedThreadPool(10);
 
@@ -45,33 +41,35 @@ public abstract class RowBatchHandler<T> extends Observable {
 		// ======添加观察者=====
 		this.addObserver(new QueueStatusMonitor<T>(this));
 		// ===================
-		this.queue = context.getQueue();
-		this.clazz = context.getClazz();
-		this.submitCapacity = context.getSubmitCapacity();
+		this.context = context;
 	}
 
 	public abstract void rowBatch(final List<T> batchList);
 
 	public void insertWithBatch(List<T> items) {
 		try {
+			RowBatchQueue<T> queue = context.getQueue();
 			if (queue != null && items != null && items.size() > 0) {
 				queue.put(items);
-				loopSize.addAndGet(items.size());
-				if (loopSize.get() >= submitCapacity) {
-					threadPool.submit(new Thread() {
-						@Override
-						public void run() {
-							try {
-								rowBatch(take(submitCapacity));
-							} catch (Exception e) {
-								logger.error("批次插入发生异常", e);
+				if (!context.isSyn()) {
+					loopSize.addAndGet(items.size());
+					final long submitCapacity = context.getSubmitCapacity();
+					if (loopSize.get() >= submitCapacity) {
+						threadPool.submit(new Thread() {
+							@Override
+							public void run() {
+								try {
+									rowBatch(take(submitCapacity));
+								} catch (Exception e) {
+									logger.error("批次插入发生异常", e);
+								}
 							}
-						}
-					});
-					loopSize.set(0);
-					// 向观察者发送通知
-					this.setChanged();
-					this.notifyObservers();
+						});
+						loopSize.set(0);
+						// 向观察者发送通知
+						this.setChanged();
+						this.notifyObservers();
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -85,6 +83,7 @@ public abstract class RowBatchHandler<T> extends Observable {
 
 	public List<T> take(long len) {
 		try {
+			RowBatchQueue<T> queue = context.getQueue();
 			if (queue != null) {
 				return queue.take(len);
 			} else {
@@ -98,6 +97,7 @@ public abstract class RowBatchHandler<T> extends Observable {
 
 	public List<T> takeAll() {
 		try {
+			RowBatchQueue<T> queue = context.getQueue();
 			if (queue != null) {
 				return queue.takeAll();
 			} else {
@@ -107,9 +107,5 @@ public abstract class RowBatchHandler<T> extends Observable {
 			logger.error("take is interrupted", e);
 			return null;
 		}
-	}
-
-	public Class<T> getClazz() {
-		return clazz;
 	}
 }
