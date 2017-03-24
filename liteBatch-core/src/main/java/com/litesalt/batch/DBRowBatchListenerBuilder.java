@@ -40,9 +40,9 @@ public class DBRowBatchListenerBuilder {
 	 */
 	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, boolean syn) {
 		MemoryRowBatchQueue<T> queue = new MemoryRowBatchQueue<T>();
-		HandlerContext<T> context = new HandlerContext<>(queue, submitCapacity, clazz, syn);
-		DBRowBatchHandler<T> rowBatchHandler = new DBRowBatchHandler<>(context, jdbcTemplate);
-		RowBatchListener<T> listener = new RowBatchListener<>(rowBatchHandler);
+		HandlerContext<T> context = new HandlerContext<T>(queue, submitCapacity, clazz, syn);
+		DBRowBatchHandler<T> rowBatchHandler = new DBRowBatchHandler<T>(context, jdbcTemplate);
+		RowBatchListener<T> listener = new RowBatchListener<T>(rowBatchHandler);
 		return listener;
 	}
 
