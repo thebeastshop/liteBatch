@@ -1,4 +1,4 @@
-package com.litesalt.batch.monitor;
+package com.thebeastshop.batch.monitor;
 
 import java.util.Date;
 import java.util.Observable;
@@ -8,7 +8,7 @@ import java.util.TimerTask;
 
 import org.apache.log4j.Logger;
 
-import com.litesalt.batch.handler.RowBatchHandler;
+import com.thebeastshop.batch.handler.RowBatchHandler;
 
 /**
  * @author Paul-xiong

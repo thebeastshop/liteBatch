@@ -1,7 +1,7 @@
 /*
  * Copyright (C), 上海布鲁爱电子商务有限公司
  */
-package com.litesalt.batch.annotation;
+package com.thebeastshop.batch.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -14,9 +14,9 @@ import java.lang.annotation.Target;
  * @date 2017年3月16日
  * @description
  */
-@Target({ ElementType.FIELD })
+@Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface AliasField {
+public @interface AliasTable {
 	public String value();
 }

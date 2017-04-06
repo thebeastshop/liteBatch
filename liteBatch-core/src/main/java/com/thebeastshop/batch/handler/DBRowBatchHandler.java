@@ -7,7 +7,7 @@
  * @Date 2016-11-10
  * @version 1.0
  */
-package com.litesalt.batch.handler;
+package com.thebeastshop.batch.handler;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -22,12 +22,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.litesalt.batch.annotation.AliasField;
-import com.litesalt.batch.annotation.AliasTable;
-import com.litesalt.batch.annotation.ExcludeField;
-import com.litesalt.batch.context.HandlerContext;
-import com.litesalt.batch.util.CamelCaseUtils;
-import com.litesalt.batch.util.Reflections;
+import com.thebeastshop.batch.annotation.AliasField;
+import com.thebeastshop.batch.annotation.AliasTable;
+import com.thebeastshop.batch.annotation.ExcludeField;
+import com.thebeastshop.batch.context.HandlerContext;
+import com.thebeastshop.batch.util.CamelCaseUtils;
+import com.thebeastshop.batch.util.Reflections;
 
 /**
  * 批插处理器

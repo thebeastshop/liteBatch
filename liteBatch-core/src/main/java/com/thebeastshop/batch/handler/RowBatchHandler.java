@@ -7,7 +7,7 @@
  * @Date 2016-11-10
  * @version 1.0
  */
-package com.litesalt.batch.handler;
+package com.thebeastshop.batch.handler;
 
 import java.util.List;
 import java.util.Observable;
@@ -17,9 +17,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.log4j.Logger;
 
-import com.litesalt.batch.context.HandlerContext;
-import com.litesalt.batch.monitor.QueueStatusMonitor;
-import com.litesalt.batch.queue.RowBatchQueue;
+import com.thebeastshop.batch.context.HandlerContext;
+import com.thebeastshop.batch.monitor.QueueStatusMonitor;
+import com.thebeastshop.batch.queue.RowBatchQueue;
 
 /**
  * 批插处理器

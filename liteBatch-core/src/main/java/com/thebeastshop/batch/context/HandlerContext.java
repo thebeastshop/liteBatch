@@ -1,7 +1,7 @@
-package com.litesalt.batch.context;
+package com.thebeastshop.batch.context;
 
-import com.litesalt.batch.queue.MemoryRowBatchQueue;
-import com.litesalt.batch.queue.RowBatchQueue;
+import com.thebeastshop.batch.queue.MemoryRowBatchQueue;
+import com.thebeastshop.batch.queue.RowBatchQueue;
 
 /**
  * @author Paul-xiong

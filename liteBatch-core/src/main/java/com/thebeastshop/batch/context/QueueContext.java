@@ -1,6 +1,6 @@
-package com.litesalt.batch.context;
+package com.thebeastshop.batch.context;
 
-import com.litesalt.batch.enums.TargetType;
+import com.thebeastshop.batch.enums.TargetType;
 
 /**
  * @author Paul-xiong

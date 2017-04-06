@@ -1,7 +1,7 @@
 /*
  * Copyright (C), 上海布鲁爱电子商务有限公司
  */
-package com.litesalt.batch.handler;
+package com.thebeastshop.batch.handler;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -11,8 +11,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
-import com.litesalt.batch.context.HandlerContext;
-import com.litesalt.batch.enums.FileSavedCapacity;
+import com.thebeastshop.batch.context.HandlerContext;
+import com.thebeastshop.batch.enums.FileSavedCapacity;
 
 /**
  * @author Paul-xiong

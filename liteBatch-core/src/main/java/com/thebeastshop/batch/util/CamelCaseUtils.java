@@ -7,7 +7,7 @@
  * @Date 2016-11-10
  * @version 1.0
  */
-package com.litesalt.batch.util;
+package com.thebeastshop.batch.util;
 
 /**
  * 驼峰-数据库命名转换器

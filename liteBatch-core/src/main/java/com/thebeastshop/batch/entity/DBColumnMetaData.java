@@ -7,7 +7,7 @@
  * @Date 2016-11-10
  * @version 1.0
  */
-package com.litesalt.batch.entity;
+package com.thebeastshop.batch.entity;
 
 /**
  * 数据列元信息

@@ -1,8 +1,8 @@
-package com.litesalt.batch.queue;
+package com.thebeastshop.batch.queue;
 
 import java.util.List;
 
-import com.litesalt.batch.context.QueueContext;
+import com.thebeastshop.batch.context.QueueContext;
 
 /**
  * @author Paul-xiong

@@ -1,15 +1,15 @@
-package com.litesalt.batch;
+package com.thebeastshop.batch;
 
 import java.io.File;
 
-import com.litesalt.batch.context.HandlerContext;
-import com.litesalt.batch.context.QueueContext;
-import com.litesalt.batch.enums.FileSavedCapacity;
-import com.litesalt.batch.enums.TargetType;
-import com.litesalt.batch.handler.FileRowBatchHandler;
-import com.litesalt.batch.listener.RowBatchListener;
-import com.litesalt.batch.queue.MemoryRowBatchQueue;
-import com.litesalt.batch.queue.RedisRowBatchQueue;
+import com.thebeastshop.batch.context.HandlerContext;
+import com.thebeastshop.batch.context.QueueContext;
+import com.thebeastshop.batch.enums.FileSavedCapacity;
+import com.thebeastshop.batch.enums.TargetType;
+import com.thebeastshop.batch.handler.FileRowBatchHandler;
+import com.thebeastshop.batch.listener.RowBatchListener;
+import com.thebeastshop.batch.queue.MemoryRowBatchQueue;
+import com.thebeastshop.batch.queue.RedisRowBatchQueue;
 
 /**
  * @author Paul-xiong

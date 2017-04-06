@@ -1,4 +1,4 @@
-package com.litesalt.batch.queue;
+package com.thebeastshop.batch.queue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
-import com.litesalt.batch.context.QueueContext;
+import com.thebeastshop.batch.context.QueueContext;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;

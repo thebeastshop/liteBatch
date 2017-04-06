@@ -1,7 +1,7 @@
 /*
  * Copyright (C), 上海布鲁爱电子商务有限公司
  */
-package com.litesalt.batch.enums;
+package com.thebeastshop.batch.enums;
 
 /**
  * @author Paul-xiong
