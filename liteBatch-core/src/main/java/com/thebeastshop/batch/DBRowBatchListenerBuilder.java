@@ -3,12 +3,9 @@ package com.thebeastshop.batch;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.thebeastshop.batch.context.HandlerContext;
-import com.thebeastshop.batch.context.QueueContext;
-import com.thebeastshop.batch.enums.TargetType;
 import com.thebeastshop.batch.handler.DBRowBatchHandler;
 import com.thebeastshop.batch.listener.RowBatchListener;
 import com.thebeastshop.batch.queue.MemoryRowBatchQueue;
-import com.thebeastshop.batch.queue.RedisRowBatchQueue;
 
 /**
  * @author Paul-xiong
@@ -43,41 +40,6 @@ public class DBRowBatchListenerBuilder {
 		HandlerContext<T> context = new HandlerContext<>(queue, submitCapacity, clazz, syn);
 		DBRowBatchHandler<T> rowBatchHandler = new DBRowBatchHandler<>(context, jdbcTemplate);
 		RowBatchListener<T> listener = new RowBatchListener<>(rowBatchHandler);
-		return listener;
-	}
-
-	/**
-	 * 构建redis批插监听管理器
-	 * 
-	 * @param jdbcTemplate
-	 * @param submitCapacity
-	 * @param clazz
-	 * @param host
-	 * @param port
-	 * @param auth
-	 * @return
-	 */
-	public static <T> RowBatchListener<T> buildRedisRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, String host, int port, String auth) {
-		return buildRedisRowBatchListener(jdbcTemplate, submitCapacity, clazz, host, port, auth, false);
-	}
-
-	/**
-	 * 构建redis批插监听管理器
-	 * 
-	 * @param jdbcTemplate
-	 * @param submitCapacity
-	 * @param clazz
-	 * @param host
-	 * @param port
-	 * @param syn
-	 * @return
-	 */
-	public static <T> RowBatchListener<T> buildRedisRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, String host, int port, String auth, boolean syn) {
-		QueueContext<T> qContext = new QueueContext<T>(TargetType.DB, clazz);
-		RedisRowBatchQueue<T> queue = new RedisRowBatchQueue<T>(qContext, host, port, auth);
-		HandlerContext<T> context = new HandlerContext<>(queue, submitCapacity, clazz, syn);
-		DBRowBatchHandler<T> rowBatchHandler = new DBRowBatchHandler<T>(context, jdbcTemplate);
-		RowBatchListener<T> listener = new RowBatchListener<T>(rowBatchHandler);
 		return listener;
 	}
 
