@@ -19,7 +19,7 @@ public class QueueStatusMonitor<T> implements Observer {
 
 	private final Logger log = Logger.getLogger(QueueStatusMonitor.class);
 
-	private final long time = 600 * 1000; // 定时时间
+	private Long time = 600 * 1000L; // 定时时间
 
 	private Date lastBatchTime = new Date();
 
@@ -30,7 +30,14 @@ public class QueueStatusMonitor<T> implements Observer {
 	}
 
 	public QueueStatusMonitor(final RowBatchHandler<T> handler) {
+		this(handler, 600 * 1000L);
+	}
+
+	public QueueStatusMonitor(final RowBatchHandler<T> handler, Long monitorTime) {
 		super();
+		if (monitorTime != null) {
+			this.time = monitorTime;
+		}
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {

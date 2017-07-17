@@ -56,27 +56,34 @@ public class FileRowBatchHandler<T> extends RowBatchHandler<T> {
 
 	@Override
 	public void rowBatch(List<T> batchList) {
-		logger.info("开始批次插入文件");
-		if (batchList != null && batchList.size() > 0) {
-			OutputStream os = null;
-			PrintWriter pw = null;
-			try {
-				os = new FileOutputStream(getFile(), true);
-				pw = new PrintWriter(os, true);
-				for (T t : batchList) {
-					if (t != null) {
-						pw.println(t);
+		try {
+			logger.info("开始批次插入文件");
+			if (batchList != null && batchList.size() > 0) {
+				OutputStream os = null;
+				PrintWriter pw = null;
+				try {
+					os = new FileOutputStream(getFile(), true);
+					pw = new PrintWriter(os, true);
+					for (T t : batchList) {
+						if (t != null) {
+							pw.println(t);
+						}
+					}
+					pw.flush();
+				} catch (Exception e) {
+					logger.error("批次插入文件异常: ", e);
+				} finally {
+					try {
+						pw.close();
+					} catch (Exception e2) {
+						logger.error("批次插入文件异常: {}", e2);
 					}
 				}
-				pw.flush();
-			} catch (Exception e) {
-				logger.error("批次插入文件异常: ", e);
-			} finally {
-				try {
-					pw.close();
-				} catch (Exception e2) {
-					logger.error("批次插入文件异常: {}", e2);
-				}
+			}
+		} catch (Exception e) {
+			logger.error("批次插入文件异常: {}", e);
+			if (exceptionCallback != null) {
+				exceptionCallback.handle(batchList);
 			}
 		}
 	}

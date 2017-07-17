@@ -2,6 +2,7 @@ package com.thebeastshop.batch;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.thebeastshop.batch.callback.ExceptionCallback;
 import com.thebeastshop.batch.context.HandlerContext;
 import com.thebeastshop.batch.handler.DBRowBatchHandler;
 import com.thebeastshop.batch.listener.RowBatchListener;
@@ -36,8 +37,64 @@ public class DBRowBatchListenerBuilder {
 	 * @return
 	 */
 	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, boolean syn) {
+		return buildMemoryRowBatchListener(jdbcTemplate, submitCapacity, clazz, syn, null);
+	}
+
+	/**
+	 * 构建内存批插监听管理器
+	 * 
+	 * @param jdbcTemplate
+	 * @param submitCapacity
+	 * @param clazz
+	 * @param exceptionCallback
+	 * @return
+	 */
+	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, ExceptionCallback<T> exceptionCallback) {
+		return buildMemoryRowBatchListener(jdbcTemplate, submitCapacity, clazz, false, exceptionCallback);
+	}
+
+	/**
+	 * 构建内存批插监听管理器
+	 * 
+	 * @param jdbcTemplate
+	 * @param submitCapacity
+	 * @param clazz
+	 * @param exceptionCallback
+	 * @param monitorTime
+	 * @return
+	 */
+	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, ExceptionCallback<T> exceptionCallback, Long monitorTime) {
+		return buildMemoryRowBatchListener(jdbcTemplate, submitCapacity, clazz, false, exceptionCallback, monitorTime);
+	}
+
+	/**
+	 * 构建内存批插监听管理器
+	 * 
+	 * @param jdbcTemplate
+	 * @param submitCapacity
+	 * @param clazz
+	 * @param syn
+	 * @param exceptionCallback
+	 * @return
+	 */
+	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, boolean syn, ExceptionCallback<T> exceptionCallback) {
+		return buildMemoryRowBatchListener(jdbcTemplate, submitCapacity, clazz, syn, exceptionCallback, null);
+	}
+
+	/**
+	 * 构建内存批插监听管理器
+	 * 
+	 * @param jdbcTemplate
+	 * @param submitCapacity
+	 * @param clazz
+	 * @param syn
+	 * @param exceptionCallback
+	 * @param monitorTime
+	 * @return
+	 */
+	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, boolean syn, ExceptionCallback<T> exceptionCallback, Long monitorTime) {
 		MemoryRowBatchQueue<T> queue = new MemoryRowBatchQueue<T>();
-		HandlerContext<T> context = new HandlerContext<>(queue, submitCapacity, clazz, syn);
+		HandlerContext<T> context = new HandlerContext<>(queue, submitCapacity, clazz, syn, exceptionCallback, monitorTime);
 		DBRowBatchHandler<T> rowBatchHandler = new DBRowBatchHandler<>(context, jdbcTemplate);
 		RowBatchListener<T> listener = new RowBatchListener<>(rowBatchHandler);
 		return listener;

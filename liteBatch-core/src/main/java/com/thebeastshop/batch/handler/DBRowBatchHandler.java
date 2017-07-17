@@ -100,48 +100,55 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 
 	@Override
 	public void rowBatch(final List<T> batchList) {
-		long startTimeMillis = System.currentTimeMillis();
-		logger.info("开始批次插入数据库");
-		if (batchList != null && batchList.size() > 0) {
-			jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
-				@Override
-				public void setValues(PreparedStatement ps, int i) throws SQLException {
-					T t = batchList.get(i);
-					Object o = null;
-					int n = 0;
-					for (Field field : fields) {
-						ExcludeField excludeField = field.getAnnotation(ExcludeField.class);
-						if (excludeField == null) {
-							n++;
-							o = Reflections.invokeGetter(t, field.getName());
-							if (o instanceof String) {
-								ps.setString(n, (String) o);
-							} else if (o instanceof byte[]) {
-								ps.setBytes(n, (byte[]) o);
-							} else if (o instanceof Short) {
-								ps.setShort(n, (Short) o);
-							} else if (o instanceof Integer) {
-								ps.setInt(n, (Integer) o);
-							} else if (o instanceof Long) {
-								ps.setLong(n, (Long) o);
-							} else if (o instanceof Date) {
-								ps.setTimestamp(n, new Timestamp(((Date) o).getTime()));
-							} else if (o instanceof BigDecimal) {
-								ps.setBigDecimal(n, (BigDecimal) o);
-							} else {
-								ps.setNull(n, Types.NULL);
-							}
+		try {
+			long startTimeMillis = System.currentTimeMillis();
+			logger.info("开始批次插入数据库");
+			if (batchList != null && batchList.size() > 0) {
+				jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
+					@Override
+					public void setValues(PreparedStatement ps, int i) throws SQLException {
+						T t = batchList.get(i);
+						Object o = null;
+						int n = 0;
+						for (Field field : fields) {
+							ExcludeField excludeField = field.getAnnotation(ExcludeField.class);
+							if (excludeField == null) {
+								n++;
+								o = Reflections.invokeGetter(t, field.getName());
+								if (o instanceof String) {
+									ps.setString(n, (String) o);
+								} else if (o instanceof byte[]) {
+									ps.setBytes(n, (byte[]) o);
+								} else if (o instanceof Short) {
+									ps.setShort(n, (Short) o);
+								} else if (o instanceof Integer) {
+									ps.setInt(n, (Integer) o);
+								} else if (o instanceof Long) {
+									ps.setLong(n, (Long) o);
+								} else if (o instanceof Date) {
+									ps.setTimestamp(n, new Timestamp(((Date) o).getTime()));
+								} else if (o instanceof BigDecimal) {
+									ps.setBigDecimal(n, (BigDecimal) o);
+								} else {
+									ps.setNull(n, Types.NULL);
+								}
 
+							}
 						}
 					}
-				}
 
-				@Override
-				public int getBatchSize() {
-					return batchList != null ? batchList.size() : 0;
-				}
-			});
-			logger.info("this batch spend " + (System.currentTimeMillis() - startTimeMillis) + " millisecond");
+					@Override
+					public int getBatchSize() {
+						return batchList != null ? batchList.size() : 0;
+					}
+				});
+				logger.info("this batch spend " + (System.currentTimeMillis() - startTimeMillis) + " millisecond");
+			}
+		} catch (Exception e) {
+			logger.error("批次插入数据库异常: {}", e);
+			if (exceptionCallback != null) {
+				exceptionCallback.handle(batchList);
+			}
 		}
 	}
 

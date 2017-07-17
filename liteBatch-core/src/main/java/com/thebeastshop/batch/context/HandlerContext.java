@@ -1,5 +1,6 @@
 package com.thebeastshop.batch.context;
 
+import com.thebeastshop.batch.callback.ExceptionCallback;
 import com.thebeastshop.batch.queue.MemoryRowBatchQueue;
 import com.thebeastshop.batch.queue.RowBatchQueue;
 
@@ -30,6 +31,15 @@ public class HandlerContext<T> {
 	 * 是否同步批插
 	 */
 	private boolean syn;
+	/**
+	 * 异常回调
+	 */
+	private ExceptionCallback<T> exceptionCallback;
+
+	/**
+	 * 队列状态监控器监控时间
+	 */
+	private Long monitorTime;
 
 	public HandlerContext() {
 		this(new MemoryRowBatchQueue<T>(), null);
@@ -44,11 +54,21 @@ public class HandlerContext<T> {
 	}
 
 	public HandlerContext(RowBatchQueue<T> queue, long submitCapacity, Class<T> clazz, boolean syn) {
+		this(queue, submitCapacity, clazz, syn, null, null);
+	}
+
+	public HandlerContext(RowBatchQueue<T> queue, long submitCapacity, Class<T> clazz, boolean syn, ExceptionCallback<T> exceptionCallback) {
+		this(queue, submitCapacity, clazz, syn, exceptionCallback, null);
+	}
+
+	public HandlerContext(RowBatchQueue<T> queue, long submitCapacity, Class<T> clazz, boolean syn, ExceptionCallback<T> exceptionCallback, Long monitorTime) {
 		super();
 		this.queue = queue;
 		this.submitCapacity = submitCapacity;
 		this.clazz = clazz;
 		this.syn = syn;
+		this.exceptionCallback = exceptionCallback;
+		this.monitorTime = monitorTime;
 	}
 
 	public RowBatchQueue<T> getQueue() {
@@ -81,6 +101,22 @@ public class HandlerContext<T> {
 
 	public void setSyn(boolean syn) {
 		this.syn = syn;
+	}
+
+	public ExceptionCallback<T> getExceptionCallback() {
+		return exceptionCallback;
+	}
+
+	public void setExceptionCallback(ExceptionCallback<T> exceptionCallback) {
+		this.exceptionCallback = exceptionCallback;
+	}
+
+	public Long getMonitorTime() {
+		return monitorTime;
+	}
+
+	public void setMonitorTime(Long monitorTime) {
+		this.monitorTime = monitorTime;
 	}
 
 }

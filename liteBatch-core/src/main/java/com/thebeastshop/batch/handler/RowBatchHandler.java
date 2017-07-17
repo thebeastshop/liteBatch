@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.log4j.Logger;
 
+import com.thebeastshop.batch.callback.ExceptionCallback;
 import com.thebeastshop.batch.context.HandlerContext;
 import com.thebeastshop.batch.monitor.QueueStatusMonitor;
 import com.thebeastshop.batch.queue.RowBatchQueue;
@@ -32,6 +33,8 @@ public abstract class RowBatchHandler<T> extends Observable {
 
 	protected HandlerContext<T> context;
 
+	protected ExceptionCallback<T> exceptionCallback;
+
 	private ExecutorService threadPool = Executors.newFixedThreadPool(10);
 
 	// ========================================
@@ -39,9 +42,10 @@ public abstract class RowBatchHandler<T> extends Observable {
 	public RowBatchHandler(HandlerContext<T> context) {
 		super();
 		// ======添加观察者=====
-		this.addObserver(new QueueStatusMonitor<T>(this));
+		this.addObserver(new QueueStatusMonitor<T>(this, context.getMonitorTime()));
 		// ===================
 		this.context = context;
+		this.exceptionCallback = context.getExceptionCallback();
 	}
 
 	public abstract void rowBatch(final List<T> batchList);
