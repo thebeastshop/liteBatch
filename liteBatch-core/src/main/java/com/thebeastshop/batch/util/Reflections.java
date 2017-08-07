@@ -7,7 +7,7 @@
  * @Date 2016-11-10
  * @version 1.0
  */
-package com.litesalt.batch.util;
+package com.thebeastshop.batch.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

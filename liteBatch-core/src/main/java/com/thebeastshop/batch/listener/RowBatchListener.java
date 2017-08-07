@@ -7,14 +7,14 @@
  * @Date 2016-11-10
  * @version 1.0
  */
-package com.litesalt.batch.listener;
+package com.thebeastshop.batch.listener;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.litesalt.batch.handler.RowBatchHandler;
+import com.thebeastshop.batch.handler.RowBatchHandler;
 
 /**
  * 批插监听管理器

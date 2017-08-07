@@ -1,6 +1,6 @@
-package com.litesalt.batch.context;
+package com.thebeastshop.batch.context;
 
-import com.litesalt.batch.enums.TargetType;
+import com.thebeastshop.batch.enums.TargetType;
 
 /**
  * @author Paul-xiong
@@ -16,10 +16,6 @@ public class QueueContext<T> {
 	 * 
 	 */
 	private Class<T> clazz;
-	/**
-	 * redis key扩展
-	 */
-	private String redisKeyExt;
 
 	public QueueContext() {
 		this(TargetType.DB);
@@ -30,14 +26,9 @@ public class QueueContext<T> {
 	}
 
 	public QueueContext(TargetType type, Class<T> clazz) {
-		this(type, clazz, null);
-	}
-
-	public QueueContext(TargetType type, Class<T> clazz, String redisKeyExt) {
 		super();
 		this.type = type;
 		this.clazz = clazz;
-		this.redisKeyExt = redisKeyExt;
 	}
 
 	public TargetType getType() {
@@ -54,14 +45,6 @@ public class QueueContext<T> {
 
 	public void setClazz(Class<T> clazz) {
 		this.clazz = clazz;
-	}
-
-	public String getRedisKeyExt() {
-		return redisKeyExt;
-	}
-
-	public void setRedisKeyExt(String redisKeyExt) {
-		this.redisKeyExt = redisKeyExt;
 	}
 
 }

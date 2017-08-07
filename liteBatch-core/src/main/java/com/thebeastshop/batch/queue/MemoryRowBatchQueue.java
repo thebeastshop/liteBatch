@@ -1,11 +1,11 @@
-package com.litesalt.batch.queue;
+package com.thebeastshop.batch.queue;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import com.litesalt.batch.context.QueueContext;
+import com.thebeastshop.batch.context.QueueContext;
 
 /**
  * @author Paul-xiong

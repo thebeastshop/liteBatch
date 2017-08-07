@@ -1,7 +1,7 @@
 /*
  * Copyright (C), 上海布鲁爱电子商务有限公司
  */
-package com.litesalt.batch.handler;
+package com.thebeastshop.batch.handler;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -11,8 +11,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
-import com.litesalt.batch.context.HandlerContext;
-import com.litesalt.batch.enums.FileSavedCapacity;
+import com.thebeastshop.batch.context.HandlerContext;
+import com.thebeastshop.batch.enums.FileSavedCapacity;
 
 /**
  * @author Paul-xiong
@@ -56,27 +56,34 @@ public class FileRowBatchHandler<T> extends RowBatchHandler<T> {
 
 	@Override
 	public void rowBatch(List<T> batchList) {
-		logger.info("开始批次插入文件");
-		if (batchList != null && batchList.size() > 0) {
-			OutputStream os = null;
-			PrintWriter pw = null;
-			try {
-				os = new FileOutputStream(getFile(), true);
-				pw = new PrintWriter(os, true);
-				for (T t : batchList) {
-					if (t != null) {
-						pw.println(t);
+		try {
+			logger.info("开始批次插入文件");
+			if (batchList != null && batchList.size() > 0) {
+				OutputStream os = null;
+				PrintWriter pw = null;
+				try {
+					os = new FileOutputStream(getFile(), true);
+					pw = new PrintWriter(os, true);
+					for (T t : batchList) {
+						if (t != null) {
+							pw.println(t);
+						}
+					}
+					pw.flush();
+				} catch (Exception e) {
+					logger.error("批次插入文件异常: ", e);
+				} finally {
+					try {
+						pw.close();
+					} catch (Exception e2) {
+						logger.error("批次插入文件异常: {}", e2);
 					}
 				}
-				pw.flush();
-			} catch (Exception e) {
-				logger.error("批次插入文件异常: ", e);
-			} finally {
-				try {
-					pw.close();
-				} catch (Exception e2) {
-					logger.error("批次插入文件异常: {}", e2);
-				}
+			}
+		} catch (Exception e) {
+			logger.error("批次插入文件异常: {}", e);
+			if (exceptionCallback != null) {
+				exceptionCallback.handle(batchList);
 			}
 		}
 	}
