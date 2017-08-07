@@ -39,7 +39,7 @@ liteBatch是一个轻量级，高性能，高通用的批插框架。
 也可以参考test工程的testUnit
 
 ```java
-		RowBatchListener<Person> rowBatchListener = RowBatchListenerBuilder.buildRedisRowBatchListener(jdbcTemplate, 5000, Person.class, "localhost",6379);
+		RowBatchListener<PersonVo> rowBatchListener = DBRowBatchListenerBuilder.buildMemoryRowBatchListener(jdbcTemplate, 5000, PersonVo.class);
 		try {
 			Random random = new Random();
 			Person person = null;
