@@ -13,17 +13,20 @@ package com.thebeastshop.batch.entity;
  * 数据列元信息
  */
 public class DBColumnMetaData {
-	
+
 	private String columnName;
-	
+
 	private int dataType;
-	
+
 	private Object columnDef;
-	
-	public DBColumnMetaData(String columnName, int dataType, Object columnDef) {
+
+	private int columnSize;
+
+	public DBColumnMetaData(String columnName, int dataType, Object columnDef, int columnSize) {
 		this.columnName = columnName;
 		this.dataType = dataType;
 		this.columnDef = columnDef;
+		this.columnSize = columnSize;
 	}
 
 	public String getColumnName() {
@@ -49,4 +52,13 @@ public class DBColumnMetaData {
 	public void setColumnDef(Object columnDef) {
 		this.columnDef = columnDef;
 	}
+
+	public int getColumnSize() {
+		return columnSize;
+	}
+
+	public void setColumnSize(int columnSize) {
+		this.columnSize = columnSize;
+	}
+
 }
