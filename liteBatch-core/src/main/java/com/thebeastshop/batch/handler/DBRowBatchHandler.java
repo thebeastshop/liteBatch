@@ -11,12 +11,18 @@ package com.thebeastshop.batch.handler;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -26,6 +32,7 @@ import com.thebeastshop.batch.annotation.AliasField;
 import com.thebeastshop.batch.annotation.AliasTable;
 import com.thebeastshop.batch.annotation.ExcludeField;
 import com.thebeastshop.batch.context.HandlerContext;
+import com.thebeastshop.batch.entity.DBColumnMetaData;
 import com.thebeastshop.batch.util.CamelCaseUtils;
 import com.thebeastshop.batch.util.Reflections;
 
@@ -40,7 +47,25 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 
 	private Field[] fields;
 
+	private Map<String, DBColumnMetaData> metaMap = new HashMap<String, DBColumnMetaData>();
+
 	// ================private==================
+	private boolean initDBMetaData() {
+		boolean flag = false;
+		try {
+			DatabaseMetaData metaData = jdbcTemplate.getDataSource().getConnection().getMetaData();
+			ResultSet rs = metaData.getColumns(null, "%", getAliasTable(context.getClazz()) + "%", "%");
+			while (rs.next()) {
+				metaMap.put(rs.getString("COLUMN_NAME"), new DBColumnMetaData(rs.getString("COLUMN_NAME"), rs.getInt("DATA_TYPE"), rs.getObject("COLUMN_DEF"), rs.getInt("COLUMN_SIZE")));
+			}
+			flag = true;
+		} catch (Exception e) {
+			logger.error("init db metadata wrong", e);
+			flag = false;
+		}
+		return flag;
+	}
+
 	private void prepareSql() {
 		StringBuffer sql = new StringBuffer();
 		Class<T> clazz = context.getClazz();
@@ -95,6 +120,7 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 		Class<T> clazz = context.getClazz();
 		fields = clazz.getDeclaredFields();
 
+		initDBMetaData();
 		prepareSql();
 	}
 
@@ -110,13 +136,20 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 						T t = batchList.get(i);
 						Object o = null;
 						int n = 0;
+						DBColumnMetaData metaData = null;
 						for (Field field : fields) {
 							ExcludeField excludeField = field.getAnnotation(ExcludeField.class);
 							if (excludeField == null) {
 								n++;
 								o = Reflections.invokeGetter(t, field.getName());
+								metaData = metaMap.get(getAliasField(field));
 								if (o instanceof String) {
-									ps.setString(n, (String) o);
+									// 字符串截取
+									String str = o.toString();
+									if (str.length() > metaData.getColumnSize()) {
+										str = str.substring(0, metaData.getColumnSize());
+									}
+									ps.setString(n, str);
 								} else if (o instanceof byte[]) {
 									ps.setBytes(n, (byte[]) o);
 								} else if (o instanceof Short) {
@@ -126,7 +159,17 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 								} else if (o instanceof Long) {
 									ps.setLong(n, (Long) o);
 								} else if (o instanceof Date) {
-									ps.setTimestamp(n, new Timestamp(((Date) o).getTime()));
+									Date date = (Date) o;
+									try {
+										Date minDate = null;
+										minDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse("1970-01-10 00:00:00");
+										if (date.before(minDate)) {
+											date = minDate;
+										}
+									} catch (ParseException e) {
+										logger.error("日期解析异常：{}", e);
+									}
+									ps.setTimestamp(n, new Timestamp(date.getTime()));
 								} else if (o instanceof BigDecimal) {
 									ps.setBigDecimal(n, (BigDecimal) o);
 								} else {
@@ -151,5 +194,4 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 			}
 		}
 	}
-
 }
