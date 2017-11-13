@@ -18,12 +18,6 @@ public class RowBatchListenerFactoryBean<T> implements FactoryBean<RowBatchListe
 
 	private Integer submitCapacity;
 
-	private String redisHost;
-
-	private Integer redisPort;
-
-	private String redisAuth;
-
 	private Boolean syn;
 
 	public JdbcTemplate getJdbcTemplate() {
@@ -48,30 +42,6 @@ public class RowBatchListenerFactoryBean<T> implements FactoryBean<RowBatchListe
 
 	public void setSubmitCapacity(Integer submitCapacity) {
 		this.submitCapacity = submitCapacity;
-	}
-
-	public String getRedisHost() {
-		return redisHost;
-	}
-
-	public void setRedisHost(String redisHost) {
-		this.redisHost = redisHost;
-	}
-
-	public Integer getRedisPort() {
-		return redisPort;
-	}
-
-	public void setRedisPort(Integer redisPort) {
-		this.redisPort = redisPort;
-	}
-
-	public String getRedisAuth() {
-		return redisAuth;
-	}
-
-	public void setRedisAuth(String redisAuth) {
-		this.redisAuth = redisAuth;
 	}
 
 	public Boolean getSyn() {

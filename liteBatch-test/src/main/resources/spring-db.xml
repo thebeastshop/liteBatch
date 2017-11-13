@@ -33,4 +33,11 @@
 	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
 		<property name="dataSource" ref="ds" />
 	</bean>
+	
+	<bean id="rowBatchListener" class="com.thebeastshop.batch.spring.RowBatchListenerFactoryBean">
+		<property name="jdbcTemplate" ref="jdbcTemplate"/>
+		<property name="submitCapacity" value="5000"/>
+		<property name="beanClass" value="com.thebeastshop.batch.test.Person"/>
+		<!-- <property name="syn" value="true"/> -->
+	</bean>
 </beans>

@@ -7,13 +7,14 @@
  * @Date 2016-11-11
  * @version 1.0
  */
-package com.litesalt.batch.test;
+package com.thebeastshop.batch.test;
 
 import java.util.Date;
 
-import com.litesalt.batch.annotation.AliasField;
-import com.litesalt.batch.annotation.AliasTable;
-import com.litesalt.batch.annotation.ExcludeField;
+import com.thebeastshop.batch.annotation.AliasField;
+import com.thebeastshop.batch.annotation.AliasTable;
+import com.thebeastshop.batch.annotation.ExcludeField;
+
 
 @AliasTable("person")
 public class PersonVo {

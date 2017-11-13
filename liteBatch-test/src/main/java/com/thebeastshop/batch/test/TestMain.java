@@ -1,4 +1,4 @@
-package com.litesalt.batch.test;
+package com.thebeastshop.batch.test;
 
 import java.util.Date;
 import java.util.Random;
@@ -11,30 +11,29 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.litesalt.batch.DBRowBatchListenerBuilder;
-import com.litesalt.batch.listener.RowBatchListener;
+import com.thebeastshop.batch.DBRowBatchListenerBuilder;
+import com.thebeastshop.batch.listener.RowBatchListener;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring-db.xml" })
 public class TestMain {
 	@Resource
 	private JdbcTemplate jdbcTemplate;
+	
+	@Resource
+	private RowBatchListener<Person> rowBatchListener;
 
 	@Test
 	public void testBatch1() throws Exception {
 		long start = System.currentTimeMillis();
-		RowBatchListener<Person> rowBatchListener = DBRowBatchListenerBuilder.buildRedisRowBatchListener(jdbcTemplate, 10000, Person.class, "192.168.20.48",
-				6379,null);
-		
-//		RowBatchListener<Person> rowBatchListener = RowBatchListenerBuilder.buildMemoryRowBatchListener(jdbcTemplate, 5000, Person.class);
 		
 		try {
 			Random random = new Random();
 			Person person = null;
-			for (int i = 0; i < 5000; i++) {
+			for (int i = 0; i < 100300; i++) {
 				person = new Person();
 				person.setAge(random.nextInt(100));
-				person.setAddress("XX马路1号");
+				person.setAddress("XX马路"+random.nextInt(100)+"号");
 				person.setCompany("天天 向上科技有限公司");
 				person.setName("张三");
 				person.setCreateTime(new Date());
@@ -43,6 +42,7 @@ public class TestMain {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
+			rowBatchListener.flush();
 		}
 		long end = System.currentTimeMillis();
 		System.out.println("耗时"+(end-start));

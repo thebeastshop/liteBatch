@@ -1,4 +1,4 @@
-package com.litesalt.batch.test;
+package com.thebeastshop.batch.test;
 
 import java.io.Serializable;
 import java.util.Date;

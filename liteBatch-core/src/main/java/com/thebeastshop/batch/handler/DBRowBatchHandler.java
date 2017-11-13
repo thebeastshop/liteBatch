@@ -19,11 +19,13 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -119,6 +121,12 @@ public class DBRowBatchHandler<T> extends RowBatchHandler<T> {
 
 		Class<T> clazz = context.getClazz();
 		fields = clazz.getDeclaredFields();
+		for(int i=0;i<fields.length;i++){
+			if(fields[i].getName().equals("serialVersionUID")){
+				fields = ArrayUtils.remove(fields, i);
+				break;
+			}
+		}
 
 		initDBMetaData();
 		prepareSql();
