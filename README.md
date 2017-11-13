@@ -3,9 +3,10 @@
 liteBatch是一个轻量级，高性能，高通用的批插框架。
 
 * 能够像普通insert一样在循环中插入PO
+* 支持数据库和文件批插2种模式
 * 异步执行，无阻塞
-* 维护一个缓冲的队列，到达配置的阀值之后批次提交
 * 可以和各种ORM结合使用
+* 提供对spring的支持
 * 兼容各种数据库
 * 适应所有的VO，自动生成脚本
 * 性能高效，测试机上测试大概4w+/秒
@@ -38,18 +39,21 @@ liteBatch是一个轻量级，高性能，高通用的批插框架。
 
 * 添加支持spring配置的bean类
 
-##快速使用
+1.2.2
+
+* 修正了一些极限情况下的bug。简化了配置，更新了readme
+
+## Quick Start
 也可以参考test工程的testUnit
 
 ```java
-		RowBatchListener<PersonVo> rowBatchListener = DBRowBatchListenerBuilder.buildMemoryRowBatchListener(jdbcTemplate, 5000, PersonVo.class);
 		try {
 			Random random = new Random();
 			Person person = null;
-			for (int i = 0; i < 66000; i++) {
+			for (int i = 0; i < 100300; i++) {
 				person = new Person();
 				person.setAge(random.nextInt(100));
-				person.setAddress("XX马路1号");
+				person.setAddress("XX马路"+random.nextInt(100)+"号");
 				person.setCompany("天天 向上科技有限公司");
 				person.setName("张三");
 				person.setCreateTime(new Date());
@@ -58,10 +62,20 @@ liteBatch是一个轻量级，高性能，高通用的批插框架。
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
+			rowBatchListener.flush();
 		}
 ```
 
-##注意
+```xml
+	<bean id="rowBatchListener1"  class="com.thebeastshop.batch.spring.RowBatchListenerFactoryBean">
+		<property name="jdbcTemplate" ref="jdbcTemplate"/>
+		<property name="submitCapacity" value="5000"/>
+		<property name="beanClass" value="com.thebeastshop.batch.test.Person"/>
+		<!--<property name="syn" value="true"/>默认为false，推荐采用false，打开的话，则为同步模式-->
+	</bean>
+```
+
+## 注意
 在mysql数据库下，需要注意以下几点
 
 * 驱动包一定得5.1.13版本以上（含）

@@ -19,8 +19,6 @@ import com.thebeastshop.batch.listener.RowBatchListener;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring-db.xml" })
 public class TestMain {
-	@Resource
-	private JdbcTemplate jdbcTemplate;
 	
 	@Resource(name="rowBatchListener1")
 	private RowBatchListener<Person> rowBatchListener1;
@@ -93,7 +91,9 @@ public class TestMain {
 				personVo = new PersonVo();
 				personVo.setPersonName("李四");
 				personVo.setPersonAge(random.nextInt(100));
-				personVo.setCoName("XX公司");
+				personVo.setCoName("殖民地公司");
+				personVo.setPersonAge(random.nextInt(100));
+				personVo.setInsertDate(new Date());
 				rowBatchListener3.insertOneWithBatch(personVo);
 			}
 		} catch (Exception e) {
