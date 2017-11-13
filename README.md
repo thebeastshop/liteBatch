@@ -47,23 +47,23 @@ liteBatch是一个轻量级，高性能，高通用的批插框架。
 也可以参考test工程的testUnit
 
 ```java
-		try {
-			Random random = new Random();
-			Person person = null;
-			for (int i = 0; i < 100300; i++) {
-				person = new Person();
-				person.setAge(random.nextInt(100));
-				person.setAddress("XX马路"+random.nextInt(100)+"号");
-				person.setCompany("天天 向上科技有限公司");
-				person.setName("张三");
-				person.setCreateTime(new Date());
-				rowBatchListener.insertOneWithBatch(person);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			rowBatchListener.flush();
+	try {
+		Random random = new Random();
+		Person person = null;
+		for (int i = 0; i < 100300; i++) {
+			person = new Person();
+			person.setAge(random.nextInt(100));
+			person.setAddress("XX马路"+random.nextInt(100)+"号");
+			person.setCompany("天天 向上科技有限公司");
+			person.setName("张三");
+			person.setCreateTime(new Date());
+			rowBatchListener.insertOneWithBatch(person);
 		}
+	} catch (Exception e) {
+		e.printStackTrace();
+	} finally {
+		rowBatchListener.flush();
+	}
 ```
 
 ```xml
