@@ -23,7 +23,7 @@ public class DBRowBatchListenerBuilder {
 	 * @param clazz
 	 * @return
 	 */
-	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz) {
+	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, Long submitCapacity, Class<T> clazz) {
 		return buildMemoryRowBatchListener(jdbcTemplate, submitCapacity, clazz, false);
 	}
 
@@ -36,7 +36,7 @@ public class DBRowBatchListenerBuilder {
 	 * @param syn
 	 * @return
 	 */
-	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, boolean syn) {
+	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, Long submitCapacity, Class<T> clazz, boolean syn) {
 		return buildMemoryRowBatchListener(jdbcTemplate, submitCapacity, clazz, syn, null);
 	}
 
@@ -49,7 +49,7 @@ public class DBRowBatchListenerBuilder {
 	 * @param exceptionCallback
 	 * @return
 	 */
-	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, ExceptionCallback<T> exceptionCallback) {
+	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, Long submitCapacity, Class<T> clazz, ExceptionCallback<T> exceptionCallback) {
 		return buildMemoryRowBatchListener(jdbcTemplate, submitCapacity, clazz, false, exceptionCallback);
 	}
 
@@ -63,7 +63,7 @@ public class DBRowBatchListenerBuilder {
 	 * @param monitorTime
 	 * @return
 	 */
-	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, ExceptionCallback<T> exceptionCallback, Long monitorTime) {
+	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, Long submitCapacity, Class<T> clazz, ExceptionCallback<T> exceptionCallback, Long monitorTime) {
 		return buildMemoryRowBatchListener(jdbcTemplate, submitCapacity, clazz, false, exceptionCallback, monitorTime);
 	}
 
@@ -77,7 +77,7 @@ public class DBRowBatchListenerBuilder {
 	 * @param exceptionCallback
 	 * @return
 	 */
-	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, boolean syn, ExceptionCallback<T> exceptionCallback) {
+	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, Long submitCapacity, Class<T> clazz, boolean syn, ExceptionCallback<T> exceptionCallback) {
 		return buildMemoryRowBatchListener(jdbcTemplate, submitCapacity, clazz, syn, exceptionCallback, null);
 	}
 
@@ -92,7 +92,7 @@ public class DBRowBatchListenerBuilder {
 	 * @param monitorTime
 	 * @return
 	 */
-	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, long submitCapacity, Class<T> clazz, boolean syn, ExceptionCallback<T> exceptionCallback, Long monitorTime) {
+	public static <T> RowBatchListener<T> buildMemoryRowBatchListener(JdbcTemplate jdbcTemplate, Long submitCapacity, Class<T> clazz, boolean syn, ExceptionCallback<T> exceptionCallback, Long monitorTime) {
 		MemoryRowBatchQueue<T> queue = new MemoryRowBatchQueue<T>();
 		HandlerContext<T> context = new HandlerContext<>(queue, submitCapacity, clazz, syn, exceptionCallback, monitorTime);
 		DBRowBatchHandler<T> rowBatchHandler = new DBRowBatchHandler<>(context, jdbcTemplate);

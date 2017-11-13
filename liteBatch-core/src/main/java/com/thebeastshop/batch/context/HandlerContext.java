@@ -22,7 +22,7 @@ public class HandlerContext<T> {
 	/**
 	 * 触发异步插入的提交数量
 	 */
-	private long submitCapacity;
+	private Long submitCapacity;
 	/**
 	 * 操作的泛型类
 	 */
@@ -49,19 +49,19 @@ public class HandlerContext<T> {
 		this(queue, DEFAULT_SUBMIT_CAPACITY, clazz);
 	}
 
-	public HandlerContext(RowBatchQueue<T> queue, long submitCapacity, Class<T> clazz) {
+	public HandlerContext(RowBatchQueue<T> queue, Long submitCapacity, Class<T> clazz) {
 		this(queue, submitCapacity, clazz, false);
 	}
 
-	public HandlerContext(RowBatchQueue<T> queue, long submitCapacity, Class<T> clazz, boolean syn) {
+	public HandlerContext(RowBatchQueue<T> queue, Long submitCapacity, Class<T> clazz, boolean syn) {
 		this(queue, submitCapacity, clazz, syn, null, null);
 	}
 
-	public HandlerContext(RowBatchQueue<T> queue, long submitCapacity, Class<T> clazz, boolean syn, ExceptionCallback<T> exceptionCallback) {
+	public HandlerContext(RowBatchQueue<T> queue, Long submitCapacity, Class<T> clazz, boolean syn, ExceptionCallback<T> exceptionCallback) {
 		this(queue, submitCapacity, clazz, syn, exceptionCallback, null);
 	}
 
-	public HandlerContext(RowBatchQueue<T> queue, long submitCapacity, Class<T> clazz, boolean syn, ExceptionCallback<T> exceptionCallback, Long monitorTime) {
+	public HandlerContext(RowBatchQueue<T> queue, Long submitCapacity, Class<T> clazz, boolean syn, ExceptionCallback<T> exceptionCallback, Long monitorTime) {
 		super();
 		this.queue = queue;
 		this.submitCapacity = submitCapacity;

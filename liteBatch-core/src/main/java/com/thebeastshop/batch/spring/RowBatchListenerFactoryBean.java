@@ -16,7 +16,7 @@ public class RowBatchListenerFactoryBean<T> implements FactoryBean<RowBatchListe
 
 	private Class<T> beanClass;
 
-	private Integer submitCapacity;
+	private Long submitCapacity;
 
 	private Boolean syn;
 
@@ -36,11 +36,11 @@ public class RowBatchListenerFactoryBean<T> implements FactoryBean<RowBatchListe
 		this.beanClass = beanClass;
 	}
 
-	public Integer getSubmitCapacity() {
+	public Long getSubmitCapacity() {
 		return submitCapacity;
 	}
 
-	public void setSubmitCapacity(Integer submitCapacity) {
+	public void setSubmitCapacity(Long submitCapacity) {
 		this.submitCapacity = submitCapacity;
 	}
 
@@ -54,7 +54,7 @@ public class RowBatchListenerFactoryBean<T> implements FactoryBean<RowBatchListe
 
 	@Override
 	public RowBatchListener<T> getObject() throws Exception {
-		if (syn == null) {
+		if (syn == null || syn == false) {
 			return DBRowBatchListenerBuilder.buildMemoryRowBatchListener(jdbcTemplate, submitCapacity, beanClass);
 		}
 		return DBRowBatchListenerBuilder.buildMemoryRowBatchListener(jdbcTemplate, submitCapacity, beanClass, syn);
