@@ -67,7 +67,7 @@ liteBatch是一个轻量级，高性能，高通用的批插框架。
 ```
 
 ```xml
-	<bean id="rowBatchListener1"  class="com.thebeastshop.batch.spring.RowBatchListenerFactoryBean">
+	<bean id="rowBatchListener"  class="com.thebeastshop.batch.spring.RowBatchListenerFactoryBean">
 		<property name="jdbcTemplate" ref="jdbcTemplate"/>
 		<property name="submitCapacity" value="5000"/>
 		<property name="beanClass" value="com.thebeastshop.batch.test.Person"/>
