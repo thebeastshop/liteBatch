@@ -1,4 +1,6 @@
 
+[![build](https://travis-ci.org/thebeastshop/liteBatch.svg?branch=master)]()
+
 ## liteBatch
 liteBatch是一个轻量级，高性能，高通用的批插框架。
 
