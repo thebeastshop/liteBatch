@@ -33,15 +33,24 @@ public class TestMain {
 	public void testBatch1() throws Exception {
 		long start = System.currentTimeMillis();
 		
+		final String[] nameArr = new String[]{"荆轲","李白","成吉思汗","诸葛亮","曹操","赵云","黄忠","孙尚香","周瑜","刘备",
+				"梦奇","吕布","太乙真人","东皇太一","牛魔","典韦","钟无艳","张飞","关羽","孙悟空","宫本武藏","亚瑟","艾琳"};
+		
+		final String[] titleArr = new String[]{"攻城狮","鼓励狮","占卜师","天文家","文学家"};
+		
+		final String[] companyArr = new String[]{"上海XXX信息科技有限公司","上海云海信息科技有限公司","北京金山网络科技有限公司","上海快钱支付清算有限公司","上海ABC网络科技有限公司"};
+		
 		try {
 			Random random = new Random();
 			Person person = null;
-			for (int i = 0; i < 100300; i++) {
+			for (int i = 0; i < 250300; i++) {
 				person = new Person();
 				person.setAge(random.nextInt(100));
 				person.setAddress("XX马路"+random.nextInt(100)+"号");
-				person.setCompany("天天 向上科技有限公司");
-				person.setName("张三");
+				person.setName(nameArr[random.nextInt(nameArr.length)]);
+				person.setCompany(companyArr[random.nextInt(companyArr.length)]);
+				person.setEmail("abc"+random.nextInt(100)+"@163.com");
+				person.setTitle(titleArr[random.nextInt(titleArr.length)]);
 				person.setCreateTime(new Date());
 				rowBatchListener1.insertOneWithBatch(person);
 			}
@@ -87,7 +96,7 @@ public class TestMain {
 		try {
 			Random random = new Random();
 			PersonVo personVo = null;
-			for (int i = 0; i < 41000; i++) {
+			for (int i = 0; i < 201000; i++) {
 				personVo = new PersonVo();
 				personVo.setPersonName("李四");
 				personVo.setPersonAge(random.nextInt(100));
